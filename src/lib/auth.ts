@@ -1,5 +1,4 @@
 import { NextAuthOptions } from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
@@ -11,7 +10,6 @@ import { prisma } from "@/lib/prisma";
  * SameSite=Strict abajo, en `cookies`.
  */
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt", // requerido por el CredentialsProvider
     maxAge: 60 * 60 * 24 * 7, // 7 días

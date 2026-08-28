@@ -41,14 +41,15 @@ async function handleReturn(req: NextRequest) {
     return NextResponse.redirect(`${siteUrl}/checkout`);
   }
 
-  const payment = await prisma.payment.findUnique({ where: { tbkToken: tokenWs } });
+  const tokenWsStr = String(tokenWs);
+  const payment = await prisma.payment.findUnique({ where: { tbkToken: tokenWsStr } });
   if (!payment) {
     return NextResponse.redirect(`${siteUrl}/checkout`);
   }
 
   try {
     // RF-10: confirmación server-to-server directa contra Transbank.
-    const result = await commitTransaction(tokenWs);
+    const result = await commitTransaction(tokenWsStr);
     const approved = result.status === "AUTHORIZED" && result.response_code === 0;
 
     await prisma.payment.update({

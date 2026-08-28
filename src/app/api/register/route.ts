@@ -4,9 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations";
 import { CURRENT_POLICY_VERSION } from "@/lib/utils";
 
-// RNF-06: límite de tamaño del body para evitar abuso.
-export const config = { api: { bodyParser: { sizeLimit: "1mb" } } };
-
+// RNF-06: límite de tamaño del body para evitar abuso (manejado por Next.js 14+)
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const parsed = registerSchema.safeParse(body);
