@@ -1,0 +1,184 @@
+// Esquema de base de datos - DicenArte
+// PostgreSQL + Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENTE
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDIENTE      // orden creada, esperando pago
+  PAGADA         // Webpay confirmó el pago (RF-10)
+  RECHAZADA      // pago rechazado o webhook inválido
+  EN_PREPARACION
+  ENVIADA
+  ENTREGADA
+  ANULADA
+}
+
+// RF-01 / RNF-03: usuarios gestionados vía Auth.js
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String    @unique
+  passwordHash   String?   // null si el usuario se crea vía OAuth en el futuro
+  phone          String?
+  role           Role      @default(CLIENTE)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  orders         Order[]
+  consentLogs    ConsentLog[]
+  sessions       Session[]
+  accounts       Account[]
+}
+
+// Requerido por el adapter de Auth.js (@auth/prisma-adapter)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// RF-04: categorías jerárquicas para el menú
+model Category {
+  id       String     @id @default(cuid())
+  name     String
+  slug     String     @unique
+  parentId String?
+  parent   Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryToCategory")
+  products Product[]
+}
+
+// RF-02 / RF-05: productos con stock y estado agotado
+model Product {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  description String       @db.Text
+  priceClp    Int          // precio en pesos chilenos (entero, sin decimales)
+  stock       Int          @default(0)
+  isCustom    Boolean      @default(true) // producto personalizado => sin derecho a retracto (RF-07)
+  categoryId  String
+  category    Category     @relation(fields: [categoryId], references: [id])
+  images      ProductImage[]
+  orderItems  OrderItem[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([categoryId])
+}
+
+// RNF-07: solo se guarda la key del bucket privado; la URL firmada se genera al vuelo
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  bucketKey String
+  altText   String?
+  order     Int     @default(0)
+}
+
+model Order {
+  id               String      @id @default(cuid())
+  userId           String
+  user             User        @relation(fields: [userId], references: [id])
+  status           OrderStatus @default(PENDIENTE)
+  totalClp         Int
+  shippingAddress  String      @db.Text
+  retractoAceptado Boolean     @default(false) // RF-07
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  items            OrderItem[]
+  payment          Payment?
+  boleta           Boleta?
+  statusLogs       OrderStatusLog[] // RNF-14 trazabilidad
+}
+
+model OrderItem {
+  id           String  @id @default(cuid())
+  orderId      String
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId    String
+  product      Product @relation(fields: [productId], references: [id])
+  quantity     Int
+  unitPriceClp Int     // precio congelado al momento de la compra
+}
+
+// RF-09 / RF-10 / RNF-04: nunca se guardan datos de tarjeta, solo tokens/identificadores de Webpay
+model Payment {
+  id                String    @id @default(cuid())
+  orderId           String    @unique
+  order             Order     @relation(fields: [orderId], references: [id])
+  tbkToken          String    @unique // token de la transacción Webpay
+  tbkBuyOrder       String
+  tbkStatus         String    // respuesta cruda de Transbank (AUTHORIZED, FAILED, etc.)
+  authorizationCode String?
+  amountClp         Int
+  webhookVerifiedAt DateTime?
+  createdAt         DateTime  @default(now())
+}
+
+// RF-11: boleta electrónica emitida vía proveedor SII
+model Boleta {
+  id          String   @id @default(cuid())
+  orderId     String   @unique
+  order       Order    @relation(fields: [orderId], references: [id])
+  folio       String?
+  pdfUrl      String?
+  providerRef String?
+  status      String   @default("PENDIENTE") // PENDIENTE | EMITIDA | ERROR
+  createdAt   DateTime @default(now())
+}
+
+// RNF-14: historial de cambios de estado para auditoría
+model OrderStatusLog {
+  id        String      @id @default(cuid())
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    OrderStatus
+  note      String?
+  createdAt DateTime    @default(now())
+}
+
+// RF-12 / RF-13: consentimiento explícito de datos personales, con fecha/hora exacta
+model ConsentLog {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  policyVersion String   // versión de la política aceptada, ej. "2026-08-25"
+  ipAddress     String?
+  acceptedAt    DateTime @default(now())
+}
