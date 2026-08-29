@@ -1,13 +1,11 @@
 /** @type {import('next').NextConfig} */
 const isDev = process.env.NODE_ENV !== "production";
 
-// 'unsafe-eval' solo se agrega en desarrollo porque el hot-reload de Next.js
-// (React Refresh) lo necesita para funcionar. En producción NUNCA se incluye.
 const cspHeader = `
   default-src 'self';
   script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ""} https://webpay3g.transbank.cl https://webpay3gint.transbank.cl https://www.googletagmanager.com;
   style-src 'self' 'unsafe-inline';
-  img-src 'self' data: blob: https://*.amazonaws.com https://*.s3.amazonaws.com;
+  img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://*.amazonaws.com https://*.s3.amazonaws.com;
   connect-src 'self' https://webpay3g.transbank.cl https://webpay3gint.transbank.cl https://www.google-analytics.com;
   frame-src 'self' https://webpay3g.transbank.cl https://webpay3gint.transbank.cl;
   font-src 'self';
@@ -22,6 +20,7 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
+      { protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
       { protocol: "https", hostname: "*.amazonaws.com" },
       { protocol: "https", hostname: "*.s3.amazonaws.com" },
     ],
