@@ -1,2 +1,0 @@
-Este proyecto genera robots.txt y sitemap.xml dinámicamente vía
-src/app/robots.ts y src/app/sitemap.ts (no se necesitan archivos estáticos aquí).

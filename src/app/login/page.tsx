@@ -77,12 +77,6 @@ function LoginForm() {
         </button>
       </form>
 
-      <p className="mt-4 text-sm text-base-gray-600">
-        ¿No tienes cuenta?{" "}
-        <Link href="/register" className="underline">
-          Regístrate
-        </Link>
-      </p>
     </div>
   );
 }

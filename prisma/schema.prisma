@@ -25,12 +25,12 @@ enum OrderStatus {
   ANULADA
 }
 
-// RF-01 / RNF-03: usuarios gestionados vía Auth.js
+// RF-01 / RNF-03: usuario único (admin), gestionado vía Auth.js
 model User {
   id             String    @id @default(cuid())
   name           String?
   email          String    @unique
-  passwordHash   String?   // null si el usuario se crea vía OAuth en el futuro
+  passwordHash   String?
   phone          String?
   role           Role      @default(CLIENTE)
   createdAt      DateTime  @default(now())
@@ -42,7 +42,6 @@ model User {
   accounts       Account[]
 }
 
-// Requerido por el adapter de Auth.js (@auth/prisma-adapter)
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -87,9 +86,9 @@ model Product {
   name        String
   slug        String       @unique
   description String       @db.Text
-  priceClp    Int          // precio en pesos chilenos (entero, sin decimales)
+  priceClp    Int
   stock       Int          @default(0)
-  isCustom    Boolean      @default(true) // producto personalizado => sin derecho a retracto (RF-07)
+  isCustom    Boolean      @default(true)
   categoryId  String
   category    Category     @relation(fields: [categoryId], references: [id])
   images      ProductImage[]
@@ -100,7 +99,6 @@ model Product {
   @@index([categoryId])
 }
 
-// RNF-07: solo se guarda la key del bucket privado; la URL firmada se genera al vuelo
 model ProductImage {
   id        String  @id @default(cuid())
   productId String
@@ -110,10 +108,15 @@ model ProductImage {
   order     Int     @default(0)
 }
 
+// RF-06/07/09: la orden ya no depende de una cuenta; guarda los datos del
+// cliente directamente para soportar compra de invitado.
 model Order {
   id               String      @id @default(cuid())
-  userId           String
-  user             User        @relation(fields: [userId], references: [id])
+  userId           String?
+  user             User?       @relation(fields: [userId], references: [id])
+  customerName     String
+  customerEmail    String
+  customerPhone    String?
   status           OrderStatus @default(PENDIENTE)
   totalClp         Int
   shippingAddress  String      @db.Text
@@ -134,17 +137,17 @@ model OrderItem {
   productId    String
   product      Product @relation(fields: [productId], references: [id])
   quantity     Int
-  unitPriceClp Int     // precio congelado al momento de la compra
+  unitPriceClp Int
 }
 
-// RF-09 / RF-10 / RNF-04: nunca se guardan datos de tarjeta, solo tokens/identificadores de Webpay
+// RF-09/10/RNF-04: nunca se guardan datos de tarjeta, solo tokens de Webpay
 model Payment {
   id                String    @id @default(cuid())
   orderId           String    @unique
   order             Order     @relation(fields: [orderId], references: [id])
-  tbkToken          String    @unique // token de la transacción Webpay
+  tbkToken          String    @unique
   tbkBuyOrder       String
-  tbkStatus         String    // respuesta cruda de Transbank (AUTHORIZED, FAILED, etc.)
+  tbkStatus         String
   authorizationCode String?
   amountClp         Int
   webhookVerifiedAt DateTime?
@@ -159,7 +162,7 @@ model Boleta {
   folio       String?
   pdfUrl      String?
   providerRef String?
-  status      String   @default("PENDIENTE") // PENDIENTE | EMITIDA | ERROR
+  status      String   @default("PENDIENTE")
   createdAt   DateTime @default(now())
 }
 
@@ -173,12 +176,14 @@ model OrderStatusLog {
   createdAt DateTime    @default(now())
 }
 
-// RF-12 / RF-13: consentimiento explícito de datos personales, con fecha/hora exacta
+// RF-12/13: consentimiento explícito, con fecha/hora exacta. userId es
+// opcional porque ahora también hay compras de invitado (guestEmail).
 model ConsentLog {
   id            String   @id @default(cuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
-  policyVersion String   // versión de la política aceptada, ej. "2026-08-25"
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  guestEmail    String?
+  policyVersion String
   ipAddress     String?
   acceptedAt    DateTime @default(now())
 }

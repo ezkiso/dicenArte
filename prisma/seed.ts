@@ -50,15 +50,23 @@ async function main() {
       slug: "cuadro-retrato-mascota",
       description: "Ilustración personalizada de tu mascota en formato cuadro decorativo.",
       priceClp: 24990,
-      stock: 0, // producto agotado de ejemplo (RF-05)
+      stock: 0,
       isCustom: true,
       categoryId: cuadros.id,
     },
   });
 
-  // Usuario admin inicial. CAMBIAR la contraseña apenas se despliegue en producción.
-  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@dicenarte.cl";
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "CambiarPassword123!";
+  // Usuario admin único. La contraseña YA NO tiene un valor por defecto
+  // hardcodeado: debe venir siempre desde las variables de entorno.
+  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "info@dicenarte.cl";
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+
+  if (!adminPassword) {
+    throw new Error(
+      "Falta SEED_ADMIN_PASSWORD en tu .env. Defínela antes de correr el seed."
+    );
+  }
+
   const passwordHash = await bcrypt.hash(adminPassword, 12);
 
   await prisma.user.upsert({

@@ -5,7 +5,7 @@ import { formatClp } from "@/lib/utils";
 export default async function AdminOrdersPage() {
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: "desc" },
-    include: { user: true, payment: true },
+    include: { payment: true },
     take: 100,
   });
 
@@ -26,7 +26,7 @@ export default async function AdminOrdersPage() {
           {orders.map((o) => (
             <tr key={o.id} className="border-b border-base-gray-200">
               <td className="py-2 font-mono text-xs">{o.id.slice(-8).toUpperCase()}</td>
-              <td className="py-2">{o.user.email}</td>
+              <td className="py-2">{o.customerEmail}</td>
               <td className="py-2">{formatClp(o.totalClp)}</td>
               <td className="py-2">
                 <span

@@ -3,15 +3,13 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkoutSchema } from "@/lib/validations";
+import { CURRENT_POLICY_VERSION } from "@/lib/utils";
 
-// RF-06/07: crea la orden a partir de los ítems del carrito. Los precios y
-// el stock SIEMPRE se recalculan en el servidor a partir de la base de
-// datos — nunca se confía en el precio que venga del cliente.
+// RF-06/07: crea la orden a partir de los ítems del carrito.
+// Ya no exige sesión iniciada: admite compra como invitado. Si por algún
+// motivo hay una sesión activa (ej. el admin probando), igual se asocia.
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Debes iniciar sesión." }, { status: 401 });
-  }
 
   const body = await req.json();
   const parsed = checkoutSchema.safeParse(body);
@@ -49,7 +47,10 @@ export async function POST(req: NextRequest) {
     const order = await prisma.$transaction(async (tx) => {
       const newOrder = await tx.order.create({
         data: {
-          userId: session.user.id!,
+          userId: session?.user?.id ?? null,
+          customerName: parsed.data.customerName,
+          customerEmail: parsed.data.customerEmail,
+          customerPhone: parsed.data.customerPhone,
           totalClp: total,
           shippingAddress: parsed.data.shippingAddress,
           retractoAceptado: parsed.data.retractoAceptado,
@@ -58,15 +59,24 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Reserva de stock (RF-05): se descuenta al crear la orden pendiente.
-      // Si el pago falla, un job/endpoint de reconciliación debería reponerlo;
-      // se deja como TODO explícito para el siguiente entregable.
       for (const item of items) {
         await tx.product.update({
           where: { id: item.productId },
           data: { stock: { decrement: item.quantity } },
         });
       }
+
+      // RF-12/13: log de consentimiento con fecha/hora exacta, también para
+      // compras de invitado (identificadas por su correo, no por userId).
+      const forwardedFor = req.headers.get("x-forwarded-for");
+      await tx.consentLog.create({
+        data: {
+          userId: session?.user?.id ?? null,
+          guestEmail: session?.user?.id ? null : parsed.data.customerEmail,
+          policyVersion: CURRENT_POLICY_VERSION,
+          ipAddress: forwardedFor?.split(",")[0]?.trim() ?? null,
+        },
+      });
 
       return newOrder;
     });

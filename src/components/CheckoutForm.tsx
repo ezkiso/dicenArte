@@ -1,30 +1,32 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useCartStore } from "@/lib/cartStore";
 import { formatClp } from "@/lib/utils";
 
-// RF-07: aviso de derecho a retracto con checkbox obligatorio antes de pagar.
-// RF-08: se muestra también la referencia a garantía legal y T&C.
-// RF-09: el pago en sí ocurre en Webpay; aquí solo se crea la orden y se
-// redirige — el formulario de tarjeta nunca toca este servidor.
+// RF-07: derecho a retracto. RF-08: garantía legal y T&C.
+// RF-12: consentimiento de datos, ahora aquí mismo porque ya no hay registro
+// previo (compra de invitado). RF-09: el pago ocurre en Webpay.
 export default function CheckoutForm() {
   const items = useCartStore((s) => s.items);
   const total = useCartStore((s) => s.totalClp());
   const clear = useCartStore((s) => s.clear);
 
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [retracto, setRetracto] = useState(false);
+  const [dataConsent, setDataConsent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const formRef = useRef<HTMLFormElement>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
-    if (!retracto) {
-      setError("Debes aceptar la política de derecho a retracto para continuar.");
+    if (!retracto || !dataConsent) {
+      setError("Debes aceptar ambas condiciones para continuar.");
       return;
     }
     if (address.trim().length < 10) {
@@ -38,8 +40,12 @@ export default function CheckoutForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          customerName: name,
+          customerEmail: email,
+          customerPhone: phone || undefined,
           shippingAddress: address,
           retractoAceptado: retracto,
+          dataConsent,
           items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
         }),
       });
@@ -60,7 +66,6 @@ export default function CheckoutForm() {
       const { url, token } = await webpayRes.json();
       clear();
 
-      // Webpay espera un POST con el parámetro token_ws al `url` entregado.
       const form = document.createElement("form");
       form.method = "POST";
       form.action = url;
@@ -78,7 +83,47 @@ export default function CheckoutForm() {
   }
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="name" className="mb-1 block text-sm font-medium">
+            Nombre completo
+          </label>
+          <input
+            id="name"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full border border-base-gray-300 p-3 text-sm"
+          />
+        </div>
+        <div>
+          <label htmlFor="email" className="mb-1 block text-sm font-medium">
+            Correo
+          </label>
+          <input
+            id="email"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full border border-base-gray-300 p-3 text-sm"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="phone" className="mb-1 block text-sm font-medium">
+          Teléfono (opcional)
+        </label>
+        <input
+          id="phone"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="w-full border border-base-gray-300 p-3 text-sm"
+        />
+      </div>
+
       <div>
         <label htmlFor="address" className="mb-1 block text-sm font-medium">
           Dirección de despacho
@@ -98,17 +143,14 @@ export default function CheckoutForm() {
         <p className="font-semibold">Antes de continuar:</p>
         <p className="mt-1 text-base-gray-700">
           Los productos personalizados <strong>no tienen derecho a retracto de 10 días</strong>{" "}
-          según lo dispuesto en la Ley N° 19.496 sobre Protección de los Derechos de los
-          Consumidores, dado que son confeccionados especialmente según las especificaciones
-          del comprador.
+          según la Ley del Consumidor, ya que se confeccionan según tus especificaciones.
         </p>
         <p className="mt-2 text-base-gray-700">
-          Aplica la <strong>Garantía Legal de 6 meses</strong> por defectos de fabricación. Revisa
-          los{" "}
+          Aplica <strong>Garantía Legal de 6 meses</strong>. Revisa los{" "}
           <a href="/legal" target="_blank" className="underline">
-            Términos y Condiciones completos
+            Términos y Condiciones
           </a>
-          , incluyendo costos y plazos de envío.
+          .
         </p>
         <label className="mt-3 flex items-start gap-2">
           <input
@@ -119,8 +161,22 @@ export default function CheckoutForm() {
             required
           />
           <span>
-            Acepto que este pedido, al ser personalizado, no tiene derecho a retracto de 10
-            días, y he leído la Garantía Legal y los Términos y Condiciones.
+            Acepto que este pedido, al ser personalizado, no tiene derecho a retracto, y he
+            leído la Garantía Legal y los Términos y Condiciones.
+          </span>
+        </label>
+
+        <label className="mt-3 flex items-start gap-2">
+          <input
+            type="checkbox"
+            checked={dataConsent}
+            onChange={(e) => setDataConsent(e.target.checked)}
+            className="mt-1"
+            required
+          />
+          <span>
+            Autorizo el tratamiento de mis datos (nombre, correo, teléfono, dirección)
+            exclusivamente para gestionar este pedido y su despacho.
           </span>
         </label>
       </div>

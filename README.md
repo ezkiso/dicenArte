@@ -37,9 +37,6 @@ npm run dev
 
 La app queda disponible en `http://localhost:3000`.
 
-El usuario administrador creado por el seed es:
-- **Correo:** `admin@dicenarte.cl` (o el valor de `SEED_ADMIN_EMAIL`)
-- **Contraseña:** `CambiarPassword123!` (o el valor de `SEED_ADMIN_PASSWORD`)
 
 **Cambia esta contraseña de inmediato en cualquier ambiente que no sea tu
 máquina local.**
