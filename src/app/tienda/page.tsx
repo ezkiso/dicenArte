@@ -4,8 +4,17 @@ import { getSignedImageUrl } from "@/lib/s3";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Tienda",
-  description: "Todos los productos personalizados para mascotas de DicenArte.",
+  title: "Tienda | Cojines y bolsas personalizados",
+  description:
+    "Descubre cojines personalizados y bolsas de género personalizadas en Chile, con estampados a pedido y diseños exclusivos para regalar.",
+  keywords: [
+    "cojines personalizados Chile",
+    "bolsas personalizadas Chile",
+    "regalos con fotos Santiago",
+    "estampados a pedido",
+    "cojines estampados 40x40",
+    "bolsas de género personalizadas",
+  ],
 };
 
 // RF-04: catálogo filtrable por categoría. RF-05: agotados se muestran igual.

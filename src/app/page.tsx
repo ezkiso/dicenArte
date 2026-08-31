@@ -1,8 +1,22 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
 import { getSignedImageUrl } from "@/lib/s3";
 import { Pickaxe } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Cojines personalizados y bolsas de género",
+  description:
+    "Cojines personalizados y bolsas de género en Chile. Regalos con fotos, estampados a pedido y envío nacional desde Dicen Arte.",
+  keywords: [
+    "cojines personalizados Chile",
+    "bolsas personalizadas Chile",
+    "regalos con fotos",
+    "estampados a pedido",
+    "cojines estampados 40x40",
+  ],
+};
 
 export const revalidate = 60; // RNF-09: SSG con revalidación para rendimiento
 

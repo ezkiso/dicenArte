@@ -8,55 +8,68 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  // Categorías jerárquicas de ejemplo (RF-04)
-  const mascotas = await prisma.category.upsert({
-    where: { slug: "mascotas" },
-    update: {},
-    create: { name: "Mascotas", slug: "mascotas" },
-  });
-
-  const arneses = await prisma.category.upsert({
-    where: { slug: "arneses" },
-    update: {},
-    create: { name: "Arneses", slug: "arneses", parentId: mascotas.id },
-  });
-
-  const cuadros = await prisma.category.upsert({
-    where: { slug: "cuadros-decorativos" },
-    update: {},
-    create: { name: "Cuadros decorativos", slug: "cuadros-decorativos", parentId: mascotas.id },
-  });
-
-  // Producto de ejemplo
-  await prisma.product.upsert({
-    where: { slug: "arnes-personalizado-perro" },
-    update: {},
+  // Solo dos secciones principales para el catálogo
+  const cojines = await prisma.category.upsert({
+    where: { slug: "cojines-de-mascotas" },
+    update: { name: "Cojines de mascotas" },
     create: {
-      name: "Arnés personalizado para perro",
-      slug: "arnes-personalizado-perro",
-      description: "Arnés confeccionado a medida con el nombre de tu mascota bordado.",
-      priceClp: 19990,
+      name: "Cojines de mascotas",
+      slug: "cojines-de-mascotas",
+    },
+  });
+
+  const bolsos = await prisma.category.upsert({
+    where: { slug: "bolsos-de-mascotas" },
+    update: { name: "Bolsos de mascotas" },
+    create: {
+      name: "Bolsos de mascotas",
+      slug: "bolsos-de-mascotas",
+    },
+  });
+
+  // Productos de ejemplo asociados a las dos secciones
+  await prisma.product.upsert({
+    where: { slug: "cojin-personalizado-perro" },
+    update: {
+      name: "Cojin personalizado para perro",
+      description: "Cojin confeccionado a medida con el nombre de tu mascota bordado.",
+      priceClp: 10990,
       stock: 12,
       isCustom: true,
-      categoryId: arneses.id,
+      categoryId: cojines.id,
+    },
+    create: {
+      name: "Cojin personalizado para perro",
+      slug: "cojin-personalizado-perro",
+      description: "Cojin confeccionado a medida con el nombre de tu mascota bordado.",
+      priceClp: 10990,
+      stock: 12,
+      isCustom: true,
+      categoryId: cojines.id,
     },
   });
 
   await prisma.product.upsert({
-    where: { slug: "cuadro-retrato-mascota" },
-    update: {},
-    create: {
-      name: "Cuadro retrato de mascota",
-      slug: "cuadro-retrato-mascota",
-      description: "Ilustración personalizada de tu mascota en formato cuadro decorativo.",
-      priceClp: 24990,
+    where: { slug: "bolso-personalizado-mascota" },
+    update: {
+      name: "Bolso personalizado para mascota",
+      description: "Bolso a medida para tu mascota con acabado personalizado.",
+      priceClp: 9990,
       stock: 0,
       isCustom: true,
-      categoryId: cuadros.id,
+      categoryId: bolsos.id,
+    },
+    create: {
+      name: "Bolso personalizado para mascota",
+      slug: "bolso-personalizado-mascota",
+      description: "Bolso a medida para tu mascota con acabado personalizado.",
+      priceClp: 9990,
+      stock: 0,
+      isCustom: true,
+      categoryId: bolsos.id,
     },
   });
 
-  // Usuario admin único. La contraseña YA NO tiene un valor por defecto
   // hardcodeado: debe venir siempre desde las variables de entorno.
   const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "info@dicenarte.cl";
   const adminPassword = process.env.SEED_ADMIN_PASSWORD;

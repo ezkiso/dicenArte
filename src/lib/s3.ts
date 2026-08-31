@@ -8,16 +8,27 @@ import crypto from "crypto";
  * URL pública fija en la base de datos, solo la `bucketKey`.
  */
 
-const s3 = new S3Client({
-  region: process.env.S3_REGION,
-  endpoint: process.env.S3_ENDPOINT || undefined,
-  credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
-  },
-});
+const S3_REGION = process.env.S3_REGION || "auto";
+const S3_BUCKET = process.env.S3_BUCKET_NAME || "";
 
-const BUCKET = process.env.S3_BUCKET_NAME!;
+function getS3Client() {
+  const accessKeyId = process.env.S3_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
+  const bucket = process.env.S3_BUCKET_NAME;
+
+  if (!bucket || !accessKeyId || !secretAccessKey) {
+    return null;
+  }
+
+  return new S3Client({
+    region: S3_REGION,
+    endpoint: process.env.S3_ENDPOINT || undefined,
+    credentials: {
+      accessKeyId,
+      secretAccessKey,
+    },
+  });
+}
 
 export function generateBucketKey(originalName: string) {
   const ext = originalName.split(".").pop();
@@ -25,9 +36,15 @@ export function generateBucketKey(originalName: string) {
 }
 
 export async function uploadPrivateFile(key: string, body: Buffer, contentType: string) {
+  const s3 = getS3Client();
+
+  if (!s3 || !S3_BUCKET) {
+    throw new Error("Configuración de S3 no disponible. Revisa las variables de entorno de Vercel.");
+  }
+
   await s3.send(
     new PutObjectCommand({
-      Bucket: BUCKET,
+      Bucket: S3_BUCKET,
       Key: key,
       Body: body,
       ContentType: contentType,
@@ -37,6 +54,12 @@ export async function uploadPrivateFile(key: string, body: Buffer, contentType: 
 }
 
 export async function getSignedImageUrl(key: string, expiresInSeconds = 60 * 15) {
-  const command = new GetObjectCommand({ Bucket: BUCKET, Key: key });
+  const s3 = getS3Client();
+
+  if (!s3 || !S3_BUCKET || !key) {
+    return undefined;
+  }
+
+  const command = new GetObjectCommand({ Bucket: S3_BUCKET, Key: key });
   return getSignedUrl(s3, command, { expiresIn: expiresInSeconds });
 }
