@@ -11,7 +11,10 @@ import { CURRENT_POLICY_VERSION } from "@/lib/utils";
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
 
-  const body = await req.json();
+  const body = await req.json().catch(() => null);
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "JSON inválido." }, { status: 400 });
+  }
   const parsed = checkoutSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
@@ -20,21 +23,28 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const items: { productId: string; quantity: number }[] = body.items ?? [];
-  if (items.length === 0) {
-    return NextResponse.json({ error: "El carrito está vacío." }, { status: 400 });
-  }
+  const items = parsed.data.items;
 
   const productIds = items.map((i) => i.productId);
   const products = await prisma.product.findMany({ where: { id: { in: productIds } } });
 
-  let total = 0;
-  const orderItemsData = items.map((item) => {
-    const product = products.find((p) => p.id === item.productId);
-    if (!product) throw new Error("Producto no encontrado");
-    if (product.stock < item.quantity) {
-      throw new Error(`Sin stock suficiente para "${product.name}".`);
+  const quantities = new Map<string, number>();
+  for (const item of items) {
+    const quantity = (quantities.get(item.productId) ?? 0) + item.quantity;
+    if (quantity > 99) {
+      return NextResponse.json(
+        { error: "La cantidad máxima por producto es 99 unidades." },
+        { status: 400 }
+      );
     }
+    quantities.set(item.productId, quantity);
+  }
+
+  let total = 0;
+  const orderItemsData = [...quantities].map(([productId, quantity]) => {
+    const item = { productId, quantity };
+    const product = products.find((p) => p.id === item.productId);
+    if (!product) return null;
     total += product.priceClp * item.quantity;
     return {
       productId: product.id,
@@ -42,6 +52,16 @@ export async function POST(req: NextRequest) {
       unitPriceClp: product.priceClp,
     };
   });
+
+  if (orderItemsData.some((item) => item === null)) {
+    return NextResponse.json({ error: "Uno o más productos no existen." }, { status: 400 });
+  }
+
+  const validOrderItems = orderItemsData as {
+    productId: string;
+    quantity: number;
+    unitPriceClp: number;
+  }[];
 
   try {
     const order = await prisma.$transaction(async (tx) => {
@@ -54,16 +74,19 @@ export async function POST(req: NextRequest) {
           totalClp: total,
           shippingAddress: parsed.data.shippingAddress,
           retractoAceptado: parsed.data.retractoAceptado,
-          items: { create: orderItemsData },
+          items: { create: validOrderItems },
           statusLogs: { create: { status: "PENDIENTE", note: "Orden creada" } },
         },
       });
 
-      for (const item of items) {
-        await tx.product.update({
-          where: { id: item.productId },
+      for (const item of validOrderItems) {
+        const updated = await tx.product.updateMany({
+          where: { id: item.productId, stock: { gte: item.quantity } },
           data: { stock: { decrement: item.quantity } },
         });
+        if (updated.count !== 1) {
+          throw new Error("El stock cambió mientras procesábamos tu compra. Intenta nuevamente.");
+        }
       }
 
       // RF-12/13: log de consentimiento con fecha/hora exacta, también para

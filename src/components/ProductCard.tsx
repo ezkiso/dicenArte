@@ -26,6 +26,7 @@ export default function ProductCard({ product }: { product: ProductCardData }) {
             src={product.imageUrl}
             alt={product.name}
             fill
+            unoptimized
             className="object-cover"
             sizes="(max-width: 768px) 50vw, 25vw"
           />

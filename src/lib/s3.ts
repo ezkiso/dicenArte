@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { unstable_cache } from "next/cache";
 import crypto from "crypto";
@@ -30,6 +30,7 @@ function getS3Client() {
   cachedS3Client = new S3Client({
     region: S3_REGION,
     endpoint: process.env.S3_ENDPOINT || undefined,
+    responseChecksumValidation: "WHEN_REQUIRED",
     credentials: {
       accessKeyId,
       secretAccessKey,
@@ -60,6 +61,12 @@ export async function uploadPrivateFile(key: string, body: Buffer, contentType: 
       // Sin ACL pública: el bucket debe estar configurado como privado por defecto.
     })
   );
+}
+
+export async function deletePrivateFile(key: string) {
+  const s3 = getS3Client();
+  if (!s3 || !S3_BUCKET) return;
+  await s3.send(new DeleteObjectCommand({ Bucket: S3_BUCKET, Key: key }));
 }
 
 export const getSignedImageUrl = unstable_cache(

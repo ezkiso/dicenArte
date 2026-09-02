@@ -46,6 +46,15 @@ export const productSchema = z.object({
 // piden los datos de contacto del cliente (compra de invitado) y también
 // el consentimiento de datos (RF-12).
 export const checkoutSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        productId: z.string().cuid("Producto inválido"),
+        quantity: z.number().int().positive().max(99),
+      })
+    )
+    .min(1, "El carrito está vacío.")
+    .max(50, "El carrito tiene demasiados productos."),
   customerName: z.string().min(2, "Ingresa tu nombre completo"),
   customerEmail: z.string().email("Correo inválido"),
   customerPhone: z.string().min(8).max(20).optional(),

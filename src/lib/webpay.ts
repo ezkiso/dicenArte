@@ -95,10 +95,11 @@ export async function commitTransaction(token: string) {
  * (ej. un endpoint de reconciliación), validamos así:
  */
 export function verifyWebhookSignature(rawBody: string, signatureHeader: string | null): boolean {
-  if (!signatureHeader) return false;
+  const secret = process.env.TBK_WEBHOOK_SECRET;
+  if (!signatureHeader || !secret || secret === "cambia-este-secreto-compartido") return false;
 
   const expected = crypto
-    .createHmac("sha256", process.env.TBK_WEBHOOK_SECRET!)
+    .createHmac("sha256", secret)
     .update(rawBody)
     .digest("hex");
 

@@ -8,10 +8,11 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 // exige sesión. La orden se identifica por su `orderId` (un cuid
 // impredecible de 25 caracteres), que actúa como token de acceso.
 export async function POST(req: NextRequest) {
-  const { orderId } = await req.json();
-  if (typeof orderId !== "string") {
+  const body = await req.json().catch(() => null);
+  if (!body || typeof body !== "object" || !("orderId" in body) || typeof body.orderId !== "string") {
     return NextResponse.json({ error: "orderId requerido" }, { status: 400 });
   }
+  const { orderId } = body;
 
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) {

@@ -1,23 +1,32 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import type { Metadata } from "next";
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSignedImageUrl } from "@/lib/s3";
 import { formatClp } from "@/lib/utils";
 import AddToCartButton from "@/components/AddToCartButton";
 
-async function getProduct(slug: string) {
-  const product = await prisma.product.findUnique({
-    where: { slug },
-    include: { images: { orderBy: { order: "asc" } }, category: true },
-  });
+export const revalidate = 60;
+
+const getProduct = cache(async (slug: string) => {
+  const product = await unstable_cache(
+    () =>
+      prisma.product.findUnique({
+        where: { slug },
+        include: { images: { orderBy: { order: "asc" } }, category: true },
+      }),
+    ["product-by-slug", slug],
+    { revalidate: 60 }
+  )();
   if (!product) return null;
 
   const images = await Promise.all(
     product.images.map((img) => getSignedImageUrl(img.bucketKey))
   );
   return { product, images };
-}
+});
 
 export async function generateMetadata({
   params,
@@ -47,7 +56,15 @@ export default async function ProductPage({ params }: { params: { slug: string }
       <div className="grid gap-10 md:grid-cols-2">
         <div className="relative aspect-square w-full bg-base-gray-100">
           {images[0] ? (
-            <Image src={images[0]} alt={product.name} fill className="object-cover" />
+            <Image
+              src={images[0]}
+              alt={product.name}
+              fill
+              priority
+              unoptimized
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
+            />
           ) : (
             <div className="flex h-full items-center justify-center text-base-gray-400">
               Sin imagen

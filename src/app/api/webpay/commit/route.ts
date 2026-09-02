@@ -47,10 +47,23 @@ async function handleReturn(req: NextRequest) {
     return NextResponse.redirect(`${siteUrl}/checkout`);
   }
 
+  const order = await prisma.order.findUnique({ where: { id: payment.orderId } });
+  if (!order || order.status !== "PENDIENTE") {
+    return NextResponse.redirect(`${siteUrl}/checkout/success?orden=${payment.orderId}`);
+  }
+
   try {
     // RF-10: confirmación server-to-server directa contra Transbank.
     const result = await commitTransaction(tokenWsStr);
-    const approved = result.status === "AUTHORIZED" && result.response_code === 0;
+    const matchesOrder =
+      result.amount === payment.amountClp &&
+      result.buy_order === payment.tbkBuyOrder &&
+      result.session_id === payment.orderId;
+    const approved =
+      matchesOrder && result.status === "AUTHORIZED" && result.response_code === 0;
+    const resultNote = matchesOrder
+      ? `Transbank respondió: ${result.status}`
+      : "Respuesta Webpay no coincide con la orden almacenada";
 
     await prisma.payment.update({
       where: { id: payment.id },
@@ -62,15 +75,10 @@ async function handleReturn(req: NextRequest) {
     });
 
     await prisma.order.update({
-      where: { id: payment.orderId },
+      where: { id: payment.orderId, status: "PENDIENTE" },
       data: {
         status: approved ? "PAGADA" : "RECHAZADA",
-        statusLogs: {
-          create: {
-            status: approved ? "PAGADA" : "RECHAZADA",
-            note: `Transbank respondió: ${result.status}`,
-          },
-        },
+        statusLogs: { create: { status: approved ? "PAGADA" : "RECHAZADA", note: resultNote } },
       },
     });
 

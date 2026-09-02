@@ -4,6 +4,7 @@ import Logo from "@/components/Logo";
 import MobileMenu, { type CategoryNode } from "@/components/MobileMenu";
 import HeaderAuthLinks from "@/components/HeaderAuthLinks";
 import { prisma } from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
 
 const headingFont = Cormorant_Garamond({
   subsets: ["latin"],
@@ -18,7 +19,18 @@ const bodyFont = Manrope({
 });
 
 async function getCategoryTree(): Promise<CategoryNode[]> {
-  const all = await prisma.category.findMany({ orderBy: { name: "asc" } });
+  return getCachedCategoryTree();
+}
+
+const getCachedCategoryTree = unstable_cache(
+  async (): Promise<CategoryNode[]> => {
+  let all;
+  try {
+    all = await prisma.category.findMany({ orderBy: { name: "asc" } });
+  } catch (error) {
+    console.error("No se pudieron cargar las categorías del menú.", error);
+    return [];
+  }
   const byParent = new Map<string | null, CategoryNode[]>();
 
   for (const c of all) {
@@ -36,7 +48,10 @@ async function getCategoryTree(): Promise<CategoryNode[]> {
   const roots = byParent.get(null) ?? [];
   roots.forEach(attachChildren);
   return roots;
-}
+  },
+  ["category-tree"],
+  { revalidate: 300 }
+);
 
 function renderMenuNode(node: CategoryNode, depth = 0) {
   const isRoot = depth === 0;

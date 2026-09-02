@@ -8,9 +8,17 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("El seed destructivo está bloqueado en producción.");
+  }
+
+  if (process.env.SEED_ALLOW_DESTRUCTIVE !== "true") {
+    throw new Error(
+      "Define SEED_ALLOW_DESTRUCTIVE=true para permitir que el seed elimine datos demo."
+    );
+  }
+
   const demoProductSlugs = [
-    "arnes-personalizado-perro",
-    "cuadro-retrato-mascota",
     "cojin-personalizado-perro",
     "bolso-personalizado-mascota",
   ];
@@ -67,13 +75,12 @@ async function main() {
     data: { parentId: mascotas.id },
   });
 
-  // hardcodeado: debe venir siempre desde las variables de entorno.
-  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "info@dicenarte.cl";
+  const adminEmail = process.env.SEED_ADMIN_EMAIL?.toLowerCase().trim();
   const adminPassword = process.env.SEED_ADMIN_PASSWORD;
 
-  if (!adminPassword) {
+  if (!adminEmail || !adminPassword) {
     throw new Error(
-      "Falta SEED_ADMIN_PASSWORD en tu .env. Defínela antes de correr el seed."
+      "Faltan SEED_ADMIN_EMAIL o SEED_ADMIN_PASSWORD en tu .env. Defínelas antes de correr el seed."
     );
   }
 

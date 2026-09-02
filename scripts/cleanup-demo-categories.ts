@@ -5,6 +5,16 @@ const categorySlugs = ["mascotas", "arneses", "cuadros-decorativos"];
 const productSlugs = ["cojin-personalizado-perro", "bolso-personalizado-mascota"];
 
 async function main() {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("La limpieza de datos demo está bloqueada en producción.");
+  }
+
+  if (process.env.SEED_ALLOW_DESTRUCTIVE !== "true") {
+    throw new Error(
+      "Define SEED_ALLOW_DESTRUCTIVE=true para permitir la limpieza de datos demo."
+    );
+  }
+
   const existingCategories = await prisma.category.findMany({
     where: { slug: { in: categorySlugs } },
     select: { id: true, name: true, slug: true },
