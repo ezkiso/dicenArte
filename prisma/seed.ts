@@ -8,26 +8,63 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  // Solo dos secciones principales para el catálogo
+  const allowedSlugs = new Set([
+    "mascotas",
+    "cojines-de-mascotas",
+    "bolsos-de-mascotas",
+  ]);
+
+  await prisma.category.deleteMany({
+    where: {
+      slug: { notIn: [...allowedSlugs] },
+    },
+  });
+
+  const mascotas = await prisma.category.upsert({
+    where: { slug: "mascotas" },
+    update: { name: "Mascotas" },
+    create: {
+      name: "Mascotas",
+      slug: "mascotas",
+    },
+  });
+
   const cojines = await prisma.category.upsert({
     where: { slug: "cojines-de-mascotas" },
-    update: { name: "Cojines de mascotas" },
+    update: { name: "Cojines de mascotas", parentId: mascotas.id },
     create: {
       name: "Cojines de mascotas",
       slug: "cojines-de-mascotas",
+      parentId: mascotas.id,
     },
   });
 
   const bolsos = await prisma.category.upsert({
     where: { slug: "bolsos-de-mascotas" },
-    update: { name: "Bolsos de mascotas" },
+    update: { name: "Bolsos de mascotas", parentId: mascotas.id },
     create: {
       name: "Bolsos de mascotas",
       slug: "bolsos-de-mascotas",
+      parentId: mascotas.id,
     },
   });
 
-  // Productos de ejemplo asociados a las dos secciones
+  await prisma.category.updateMany({
+    where: { slug: { in: ["cojines-de-mascotas", "bolsos-de-mascotas"] } },
+    data: { parentId: mascotas.id },
+  });
+
+  const demoProductSlugs = [
+    "cojin-personalizado-perro",
+    "bolso-personalizado-mascota",
+  ];
+
+  await prisma.product.deleteMany({
+    where: {
+      slug: { in: demoProductSlugs },
+    },
+  });
+
   await prisma.product.upsert({
     where: { slug: "cojin-personalizado-perro" },
     update: {

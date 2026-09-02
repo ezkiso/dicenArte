@@ -10,15 +10,34 @@ export interface CategoryNode {
   children: CategoryNode[];
 }
 
+function renderMenuNode(node: CategoryNode, depth = 0, onNavigate: () => void) {
+  const isRoot = depth === 0;
+
+  return (
+    <li key={node.id} className={depth > 0 ? "ml-3 border-l border-base-gray-200 pl-3" : ""}>
+      <Link
+        href={`/tienda?categoria=${node.slug}`}
+        className={
+          isRoot
+            ? "block px-4 py-3 font-display text-2xl text-base-black"
+            : "block px-4 py-2 text-sm font-medium text-base-gray-700"
+        }
+        onClick={onNavigate}
+      >
+        {node.name}
+      </Link>
+
+      {node.children.length > 0 && (
+        <ul className={isRoot ? "mt-2 space-y-1" : "mt-1 space-y-1"}>
+          {node.children.map((child) => renderMenuNode(child, depth + 1, onNavigate))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
 export default function MobileMenu({ categories }: { categories: CategoryNode[] }) {
   const [open, setOpen] = useState(false);
-
-  // "Tienda" muestra directamente los TIPOS de producto (los hijos de cada
-  // categoría raíz). La categoría raíz (ej. "Mascotas") ya no se muestra
-  // como ítem clicable, solo agrupa.
-  const productTypes = categories.flatMap((root) =>
-    root.children.length > 0 ? root.children : [root]
-  );
 
   return (
     <div className="md:hidden">
@@ -50,17 +69,7 @@ export default function MobileMenu({ categories }: { categories: CategoryNode[] 
                 Ver toda la tienda
               </Link>
             </li>
-            {productTypes.map((cat) => (
-              <li key={cat.id}>
-                <Link
-                  href={`/tienda?categoria=${cat.slug}`}
-                  className="block px-4 py-3"
-                  onClick={() => setOpen(false)}
-                >
-                  {cat.name}
-                </Link>
-              </li>
-            ))}
+            {categories.map((root) => renderMenuNode(root, 0, () => setOpen(false)))}
             <li>
               <a href="#footer" className="block px-4 py-3" onClick={() => setOpen(false)}>
                 Contacto
