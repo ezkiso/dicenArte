@@ -17,21 +17,40 @@ export const metadata: Metadata = {
   ],
 };
 
+export const revalidate = 60;
+
 // RF-04: catálogo filtrable por categoría. RF-05: agotados se muestran igual.
 export default async function TiendaPage({
   searchParams,
 }: {
   searchParams: { categoria?: string };
 }) {
-  const category = searchParams.categoria
-    ? await prisma.category.findUnique({ where: { slug: searchParams.categoria } })
-    : null;
-
-  const products = await prisma.product.findMany({
-    where: category ? { categoryId: category.id } : undefined,
-    orderBy: { createdAt: "desc" },
-    include: { images: { take: 1, orderBy: { order: "asc" } } },
-  });
+  const [category, products] = await Promise.all([
+    searchParams.categoria
+      ? prisma.category.findUnique({
+          where: { slug: searchParams.categoria },
+          select: { id: true, name: true },
+        })
+      : Promise.resolve(null),
+    prisma.product.findMany({
+      where: searchParams.categoria
+        ? { category: { slug: searchParams.categoria } }
+        : undefined,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        priceClp: true,
+        stock: true,
+        images: {
+          take: 1,
+          orderBy: { order: "asc" },
+          select: { bucketKey: true },
+        },
+      },
+    }),
+  ]);
 
   const productsWithUrls = await Promise.all(
     products.map(async (p) => ({

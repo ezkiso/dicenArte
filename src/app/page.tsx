@@ -25,7 +25,18 @@ export default async function HomePage() {
   const featured = await prisma.product.findMany({
     take: 8,
     orderBy: { createdAt: "desc" },
-    include: { images: { take: 1, orderBy: { order: "asc" } } },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      priceClp: true,
+      stock: true,
+      images: {
+        take: 1,
+        orderBy: { order: "asc" },
+        select: { bucketKey: true },
+      },
+    },
   });
 
   const productsWithUrls = await Promise.all(

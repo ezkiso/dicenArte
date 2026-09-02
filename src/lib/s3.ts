@@ -1,5 +1,6 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { unstable_cache } from "next/cache";
 import crypto from "crypto";
 
 /**
@@ -10,17 +11,23 @@ import crypto from "crypto";
 
 const S3_REGION = process.env.S3_REGION || "auto";
 const S3_BUCKET = process.env.S3_BUCKET_NAME || "";
+let cachedS3Client: S3Client | null | undefined;
 
 function getS3Client() {
+  if (cachedS3Client !== undefined) {
+    return cachedS3Client;
+  }
+
   const accessKeyId = process.env.S3_ACCESS_KEY_ID;
   const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
   const bucket = process.env.S3_BUCKET_NAME;
 
   if (!bucket || !accessKeyId || !secretAccessKey) {
+    cachedS3Client = null;
     return null;
   }
 
-  return new S3Client({
+  cachedS3Client = new S3Client({
     region: S3_REGION,
     endpoint: process.env.S3_ENDPOINT || undefined,
     credentials: {
@@ -28,6 +35,8 @@ function getS3Client() {
       secretAccessKey,
     },
   });
+
+  return cachedS3Client;
 }
 
 export function generateBucketKey(originalName: string) {
@@ -53,13 +62,17 @@ export async function uploadPrivateFile(key: string, body: Buffer, contentType: 
   );
 }
 
-export async function getSignedImageUrl(key: string, expiresInSeconds = 60 * 15) {
-  const s3 = getS3Client();
+export const getSignedImageUrl = unstable_cache(
+  async (key: string, expiresInSeconds = 60 * 15) => {
+    const s3 = getS3Client();
 
-  if (!s3 || !S3_BUCKET || !key) {
-    return undefined;
-  }
+    if (!s3 || !S3_BUCKET || !key) {
+      return undefined;
+    }
 
-  const command = new GetObjectCommand({ Bucket: S3_BUCKET, Key: key });
-  return getSignedUrl(s3, command, { expiresIn: expiresInSeconds });
-}
+    const command = new GetObjectCommand({ Bucket: S3_BUCKET, Key: key });
+    return getSignedUrl(s3, command, { expiresIn: expiresInSeconds });
+  },
+  ["signed-product-image"],
+  { revalidate: 60 * 10 }
+);
