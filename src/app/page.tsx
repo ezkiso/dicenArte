@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import FeaturedProductsCarousel from "@/components/FeaturedProductsCarousel";
 import ProductCard from "@/components/ProductCard";
 import { getSignedImageUrl } from "@/lib/s3";
 import { Pickaxe } from "lucide-react";
@@ -62,16 +62,33 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
       <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="mb-6 font-display text-2xl">Destacados</h2>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {productsWithUrls.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-gray-500">
+              Colección destacada
+            </p>
+            <h1 className="mt-2 font-display text-3xl text-base-black sm:text-4xl">Destacados</h1>
+          </div>
         </div>
-        {productsWithUrls.length === 0 && (
-          <p className="text-base-gray-500">Aún no hay productos publicados.</p>
-        )}
+        <FeaturedProductsCarousel products={productsWithUrls} />
+      </section>
+
+      <section className="border-t border-base-gray-200 bg-base-gray-50">
+        <div className="mx-auto max-w-6xl px-4 py-16">
+          <h2 className="mb-8 font-display text-3xl text-base-black sm:text-4xl">
+            Últimos productos publicados
+          </h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {productsWithUrls.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+          {productsWithUrls.length === 0 && (
+            <p className="text-base-gray-500">Aún no hay productos publicados.</p>
+          )}
+        </div>
       </section>
     </div>
   );
