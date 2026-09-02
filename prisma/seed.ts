@@ -8,6 +8,19 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
+  const demoProductSlugs = [
+    "arnes-personalizado-perro",
+    "cuadro-retrato-mascota",
+    "cojin-personalizado-perro",
+    "bolso-personalizado-mascota",
+  ];
+
+  await prisma.product.deleteMany({
+    where: {
+      slug: { in: demoProductSlugs },
+    },
+  });
+
   const allowedSlugs = new Set([
     "mascotas",
     "cojines-de-mascotas",
@@ -52,59 +65,6 @@ async function main() {
   await prisma.category.updateMany({
     where: { slug: { in: ["cojines-de-mascotas", "bolsos-de-mascotas"] } },
     data: { parentId: mascotas.id },
-  });
-
-  const demoProductSlugs = [
-    "cojin-personalizado-perro",
-    "bolso-personalizado-mascota",
-  ];
-
-  await prisma.product.deleteMany({
-    where: {
-      slug: { in: demoProductSlugs },
-    },
-  });
-
-  await prisma.product.upsert({
-    where: { slug: "cojin-personalizado-perro" },
-    update: {
-      name: "Cojin personalizado para perro",
-      description: "Cojin confeccionado a medida con el nombre de tu mascota bordado.",
-      priceClp: 10990,
-      stock: 12,
-      isCustom: true,
-      categoryId: cojines.id,
-    },
-    create: {
-      name: "Cojin personalizado para perro",
-      slug: "cojin-personalizado-perro",
-      description: "Cojin confeccionado a medida con el nombre de tu mascota bordado.",
-      priceClp: 10990,
-      stock: 12,
-      isCustom: true,
-      categoryId: cojines.id,
-    },
-  });
-
-  await prisma.product.upsert({
-    where: { slug: "bolso-personalizado-mascota" },
-    update: {
-      name: "Bolso personalizado para mascota",
-      description: "Bolso a medida para tu mascota con acabado personalizado.",
-      priceClp: 9990,
-      stock: 0,
-      isCustom: true,
-      categoryId: bolsos.id,
-    },
-    create: {
-      name: "Bolso personalizado para mascota",
-      slug: "bolso-personalizado-mascota",
-      description: "Bolso a medida para tu mascota con acabado personalizado.",
-      priceClp: 9990,
-      stock: 0,
-      isCustom: true,
-      categoryId: bolsos.id,
-    },
   });
 
   // hardcodeado: debe venir siempre desde las variables de entorno.
