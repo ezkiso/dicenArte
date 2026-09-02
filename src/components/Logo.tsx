@@ -20,6 +20,7 @@ export default function Logo({ inverted = false }: { inverted?: boolean }) {
         alt="Logo DicenArte"
         width={60}
         height={60}
+        priority
         className="h-14 w-14 object-cover"
       />
       Dicen<span className="italic">Arte</span>
