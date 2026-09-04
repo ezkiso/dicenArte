@@ -14,7 +14,7 @@ function renderMenuNode(node: CategoryNode, depth = 0, onNavigate: () => void) {
   const isRoot = depth === 0;
 
   return (
-    <li key={node.id} className={depth > 0 ? "ml-3 border-l border-base-gray-200 pl-3" : ""}>
+    <li key={node.id} className={depth > 0 ? "ml-3 pl-3" : ""}>
       <Link
         href={`/tienda?categoria=${node.slug}`}
         className={

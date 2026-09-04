@@ -25,6 +25,29 @@ export default async function TiendaPage({
 }: {
   searchParams: { categoria?: string };
 }) {
+  // Obtener todas las categorías para poder buscar subcategorías
+  const allCategories = await prisma.category.findMany({
+    select: { id: true, slug: true, parentId: true },
+  });
+
+  // Función para obtener todas las categorías hijas recursivamente
+  function getAllCategoryIds(categorySlug: string): string[] {
+    const category = allCategories.find(c => c.slug === categorySlug);
+    if (!category) return [];
+    
+    const ids = [category.id];
+    
+    // Buscar categorías hijas directas
+    const children = allCategories.filter(c => c.parentId === category.id);
+    children.forEach(child => {
+      ids.push(...getAllCategoryIds(child.slug));
+    });
+    
+    return ids;
+  }
+
+  const categoryIds = searchParams.categoria ? getAllCategoryIds(searchParams.categoria) : [];
+
   const [category, products] = await Promise.all([
     searchParams.categoria
       ? prisma.category.findUnique({
@@ -33,8 +56,8 @@ export default async function TiendaPage({
         })
       : Promise.resolve(null),
     prisma.product.findMany({
-      where: searchParams.categoria
-        ? { category: { slug: searchParams.categoria } }
+      where: searchParams.categoria && categoryIds.length > 0
+        ? { categoryId: { in: categoryIds } }
         : undefined,
       orderBy: { createdAt: "desc" },
       select: {

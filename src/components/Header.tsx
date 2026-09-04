@@ -53,11 +53,11 @@ const getCachedCategoryTree = unstable_cache(
   { revalidate: 300 }
 );
 
-function renderMenuNode(node: CategoryNode, depth = 0) {
+function renderMenuNode(node: CategoryNode, depth = 0, skipIndent = false) {
   const isRoot = depth === 0;
 
   return (
-    <div key={node.id} className={depth > 0 ? "ml-3 border-l border-base-gray-200 pl-3" : ""}>
+    <div key={node.id} className={depth > 0 && !skipIndent ? "ml-3 pl-3" : ""}>
       <Link
         href={`/tienda?categoria=${node.slug}`}
         className={
@@ -71,7 +71,7 @@ function renderMenuNode(node: CategoryNode, depth = 0) {
 
       {node.children.length > 0 && (
         <div className={isRoot ? "mt-3 space-y-2" : "mt-2 space-y-1"}>
-          {node.children.map((child) => renderMenuNode(child, depth + 1))}
+          {node.children.map((child) => renderMenuNode(child, depth + 1, skipIndent))}
         </div>
       )}
     </div>
@@ -111,11 +111,12 @@ export default async function Header() {
                 className="flex items-center gap-1 text-sm font-semibold tracking-[0.14em] text-base-black uppercase hover:text-base-gray-700"
               >
                 Mascotas
+                <span className="text-xs">▼</span>
               </Link>
               {mascotasCategory.children.length > 0 && (
-                <div className="invisible absolute left-0 top-full z-40 min-w-[22rem] border border-base-gray-200 bg-base-white p-4 opacity-0 shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-200 group-hover:visible group-hover:opacity-100">
+                <div className="invisible absolute left-1/2 top-full z-40 min-w-[14rem] -translate-x-1/2 border border-base-gray-200 bg-base-white p-4 opacity-0 shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-200 group-hover:visible group-hover:opacity-100">
                   <div className="space-y-4">
-                    {mascotasCategory.children.map((child) => renderMenuNode(child, 1))}
+                    {mascotasCategory.children.map((child) => renderMenuNode(child, 1, true))}
                   </div>
                 </div>
               )}
