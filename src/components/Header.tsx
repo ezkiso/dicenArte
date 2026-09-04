@@ -80,6 +80,10 @@ function renderMenuNode(node: CategoryNode, depth = 0) {
 
 export default async function Header() {
   const categories = await getCategoryTree();
+  
+  // Separar categoría "Mascotas" del resto
+  const mascotasCategory = categories.find(cat => cat.slug === "mascotas");
+  const otherCategories = categories.filter(cat => cat.slug !== "mascotas");
 
   return (
     <header className={`relative border-b border-base-gray-200 bg-base-white ${headingFont.variable} ${bodyFont.variable}`}>
@@ -91,14 +95,32 @@ export default async function Header() {
             <Link href="/tienda" className="flex items-center gap-1 text-sm font-semibold tracking-[0.14em] text-base-black uppercase hover:text-base-gray-700">
               Tienda
             </Link>
-            {categories.length > 0 && (
+            {otherCategories.length > 0 && (
               <div className="invisible absolute left-0 top-full z-40 min-w-[22rem] border border-base-gray-200 bg-base-white p-4 opacity-0 shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-200 group-hover:visible group-hover:opacity-100">
                 <div className="space-y-4">
-                  {categories.map((root) => renderMenuNode(root))}
+                  {otherCategories.map((root) => renderMenuNode(root))}
                 </div>
               </div>
             )}
           </div>
+
+          {mascotasCategory && (
+            <div className="group relative">
+              <Link 
+                href={`/tienda?categoria=${mascotasCategory.slug}`} 
+                className="flex items-center gap-1 text-sm font-semibold tracking-[0.14em] text-base-black uppercase hover:text-base-gray-700"
+              >
+                Mascotas
+              </Link>
+              {mascotasCategory.children.length > 0 && (
+                <div className="invisible absolute left-0 top-full z-40 min-w-[22rem] border border-base-gray-200 bg-base-white p-4 opacity-0 shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-200 group-hover:visible group-hover:opacity-100">
+                  <div className="space-y-4">
+                    {mascotasCategory.children.map((child) => renderMenuNode(child, 1))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <a href="#footer" className="text-sm font-semibold tracking-[0.14em] text-base-black uppercase hover:text-base-gray-700">
             Contacto
