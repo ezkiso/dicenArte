@@ -1,6 +1,5 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { unstable_cache } from "next/cache";
 import crypto from "crypto";
 
 /**
@@ -69,17 +68,13 @@ export async function deletePrivateFile(key: string) {
   await s3.send(new DeleteObjectCommand({ Bucket: S3_BUCKET, Key: key }));
 }
 
-export const getSignedImageUrl = unstable_cache(
-  async (key: string, expiresInSeconds = 60 * 15) => {
-    const s3 = getS3Client();
+export async function getSignedImageUrl(key: string, expiresInSeconds = 60 * 15) {
+  const s3 = getS3Client();
 
-    if (!s3 || !S3_BUCKET || !key) {
-      return undefined;
-    }
+  if (!s3 || !S3_BUCKET || !key) {
+    return undefined;
+  }
 
-    const command = new GetObjectCommand({ Bucket: S3_BUCKET, Key: key });
-    return getSignedUrl(s3, command, { expiresIn: expiresInSeconds });
-  },
-  ["signed-product-image"],
-  { revalidate: 60 * 10 }
-);
+  const command = new GetObjectCommand({ Bucket: S3_BUCKET, Key: key });
+  return getSignedUrl(s3, command, { expiresIn: expiresInSeconds });
+}

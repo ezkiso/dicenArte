@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   ],
 };
 
-export const revalidate = 60; // RNF-09: SSG con revalidación para rendimiento
+export const dynamic = "force-dynamic";
 
 // RF-03: home con vitrina de destacados y acceso directo a Tienda/Carrito/Login.
 export default async function HomePage() {
