@@ -27,19 +27,20 @@ enum OrderStatus {
 
 // RF-01 / RNF-03: usuario único (admin), gestionado vía Auth.js
 model User {
-  id             String    @id @default(cuid())
-  name           String?
-  email          String    @unique
-  passwordHash   String?
-  phone          String?
-  role           Role      @default(CLIENTE)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  orders         Order[]
-  consentLogs    ConsentLog[]
-  sessions       Session[]
-  accounts       Account[]
+  id                     String    @id @default(cuid())
+  name                   String?
+  email                  String    @unique
+  passwordHash           String?
+  phone                  String?
+  role                   Role      @default(CLIENTE)
+  passwordSetupTokenHash String?
+  passwordSetupExpires   DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  orders                 Order[]
+  consentLogs            ConsentLog[]
+  sessions               Session[]
+  accounts               Account[]
 }
 
 model Account {

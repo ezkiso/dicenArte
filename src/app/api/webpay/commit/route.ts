@@ -5,6 +5,42 @@ import { prisma } from "@/lib/prisma";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 /**
+ * Marca la orden como RECHAZADA y repone el stock reservado en el checkout.
+ *
+ * El `updateMany` con `status: "PENDIENTE"` en el where actúa como guardia
+ * atómica: si la orden ya no está PENDIENTE (por ejemplo porque Transbank
+ * redirige dos veces al mismo return_url, o el usuario refresca la página),
+ * `count` da 0 y NO se repone stock de nuevo. Sin esto, un doble llamado
+ * incrementaría el stock dos veces por la misma orden fallida.
+ */
+async function markRejectedAndRestock(orderId: string, note: string) {
+  await prisma.$transaction(async (tx) => {
+    const updated = await tx.order.updateMany({
+      where: { id: orderId, status: "PENDIENTE" },
+      data: { status: "RECHAZADA" },
+    });
+
+    if (updated.count === 0) {
+      // La orden ya había sido procesada antes (pagada, rechazada o
+      // reintento del return_url) — no se toca el stock de nuevo.
+      return;
+    }
+
+    await tx.orderStatusLog.create({
+      data: { orderId, status: "RECHAZADA", note },
+    });
+
+    const items = await tx.orderItem.findMany({ where: { orderId } });
+    for (const item of items) {
+      await tx.product.update({
+        where: { id: item.productId },
+        data: { stock: { increment: item.quantity } },
+      });
+    }
+  });
+}
+
+/**
  * `return_url` al que Transbank redirige (vía POST) tras el pago.
  *
  * RF-10: antes de marcar una orden como pagada, SIEMPRE se vuelve a
@@ -26,13 +62,7 @@ async function handleReturn(req: NextRequest) {
         where: { tbkToken: String(tbkTokenAborted) },
       });
       if (payment) {
-        await prisma.order.update({
-          where: { id: payment.orderId },
-          data: {
-            status: "RECHAZADA",
-            statusLogs: { create: { status: "RECHAZADA", note: "Pago abortado por el usuario" } },
-          },
-        });
+        await markRejectedAndRestock(payment.orderId, "Pago abortado por el usuario");
         return NextResponse.redirect(
           `${siteUrl}/checkout/success?orden=${payment.orderId}`
         );
@@ -74,28 +104,28 @@ async function handleReturn(req: NextRequest) {
       },
     });
 
-    await prisma.order.update({
-      where: { id: payment.orderId, status: "PENDIENTE" },
-      data: {
-        status: approved ? "PAGADA" : "RECHAZADA",
-        statusLogs: { create: { status: approved ? "PAGADA" : "RECHAZADA", note: resultNote } },
-      },
-    });
-
-    // RF-11: al confirmarse el pago, se dispara la emisión de boleta
-    // electrónica. Se deja como stub — reemplazar por la llamada real al
-    // proveedor autorizado por el SII que se contrate.
     if (approved) {
+      await prisma.order.update({
+        where: { id: payment.orderId, status: "PENDIENTE" },
+        data: {
+          status: "PAGADA",
+          statusLogs: { create: { status: "PAGADA", note: resultNote } },
+        },
+      });
+
+      // RF-11: al confirmarse el pago, se dispara la emisión de boleta
+      // electrónica. Se deja como stub — reemplazar por la llamada real al
+      // proveedor autorizado por el SII que se contrate.
       await emitBoletaStub(payment.orderId, payment.amountClp);
+    } else {
+      // Pago rechazado por Transbank (o respuesta no coincide con la
+      // orden): se repone el stock reservado en el checkout.
+      await markRejectedAndRestock(payment.orderId, resultNote);
     }
   } catch {
-    await prisma.order.update({
-      where: { id: payment.orderId },
-      data: {
-        status: "RECHAZADA",
-        statusLogs: { create: { status: "RECHAZADA", note: "Error confirmando con Transbank" } },
-      },
-    });
+    // Error de red/timeout consultando a Transbank: se trata igual que un
+    // rechazo, reponiendo el stock reservado.
+    await markRejectedAndRestock(payment.orderId, "Error confirmando con Transbank");
   }
 
   return NextResponse.redirect(`${siteUrl}/checkout/success?orden=${payment.orderId}`);
