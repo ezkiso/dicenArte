@@ -74,7 +74,10 @@ test.describe("Login (RF-01, RF-17)", () => {
 });
 
 test.describe("Set-password (flujo de invitación de admin)", () => {
-  test("6.3 - Token inválido es rechazado", async ({ page }) => {
+  test("6.3 - Token inválido es rechazado", async ({ page }, testInfo) => {
+    await page.setExtraHTTPHeaders({
+      "x-forwarded-for": `test-${testInfo.testId}-${Date.now()}`,
+    });
     await page.goto("/set-password?token=token-completamente-inventado-123");
     await page.getByLabel(/nueva contraseña/i).fill("ContraseñaValida123");
     await page.getByLabel(/confirmar contraseña/i).fill("ContraseñaValida123");

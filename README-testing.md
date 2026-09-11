@@ -38,8 +38,7 @@ npx playwright test
 
 Para ver un reporte visual con capturas de los fallos:
 ```bash
-npx playwright show-report
-```
+cccccc```
 
 Para correr solo un archivo:
 ```bash
