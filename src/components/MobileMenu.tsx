@@ -45,7 +45,7 @@ export default function MobileMenu({ categories }: { categories: CategoryNode[] 
   const otherCategories = categories.filter(cat => cat.slug !== "mascotas");
 
   return (
-    <div className="md:hidden">
+    <div className="lg:hidden">
       <button
         type="button"
         aria-label={open ? "Cerrar menú" : "Abrir menú"}

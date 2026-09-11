@@ -90,7 +90,7 @@ export default async function Header() {
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
         <Logo />
 
-        <nav className={`hidden items-center gap-6 text-sm md:flex ${bodyFont.className}`}>
+        <nav className={`hidden items-center gap-6 text-sm lg:flex ${bodyFont.className}`}>
           <div className="group relative">
             <Link href="/tienda" className="flex items-center gap-1 text-sm font-semibold tracking-[0.14em] text-base-black uppercase hover:text-base-gray-700">
               Tienda
@@ -130,7 +130,9 @@ export default async function Header() {
 
         <div className="flex items-center gap-4">
           <HeaderAuthLinks />
-          <MobileMenu categories={categories} />
+          <div className="lg:hidden">
+            <MobileMenu categories={categories} />
+          </div>
         </div>
       </div>
     </header>

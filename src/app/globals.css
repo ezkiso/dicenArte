@@ -13,6 +13,7 @@ html {
 
 body {
   @apply bg-base-white text-base-black antialiased;
+  overflow-x: hidden;
 }
 
 /* Foco de teclado siempre visible (accesibilidad) */
