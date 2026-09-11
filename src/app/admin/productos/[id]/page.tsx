@@ -7,7 +7,10 @@ import { getSignedImageUrl } from "@/lib/s3";
 export default async function EditProductPage({ params }: { params: { id: string } }) {
   const [product, categories] = await Promise.all([
     prisma.product.findUnique({ where: { id: params.id }, include: { images: true } }),
-    prisma.category.findMany({ orderBy: { name: "asc" } }),
+    prisma.category.findMany({
+      where: { parentId: { not: null } },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
   if (!product) notFound();

@@ -2,7 +2,10 @@ import { prisma } from "@/lib/prisma";
 import AdminProductForm from "@/components/AdminProductForm";
 
 export default async function NewProductPage() {
-  const categories = await prisma.category.findMany({ orderBy: { name: "asc" } });
+  const categories = await prisma.category.findMany({
+    where: { parentId: { not: null } },
+    orderBy: { name: "asc" },
+  });
 
   return (
     <div>

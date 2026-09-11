@@ -7,7 +7,7 @@ import CookieConsentBanner from "@/components/CookieConsentBanner";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { Analytics } from "@vercel/analytics/next"
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dicenarte.cl";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

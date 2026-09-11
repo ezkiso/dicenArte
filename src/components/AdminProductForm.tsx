@@ -13,8 +13,8 @@ interface ProductFormValues {
   name: string;
   slug: string;
   description: string;
-  priceClp: number;
-  stock: number;
+  priceClp: number | "";
+  stock: number | "";
   isCustom: boolean;
   categoryId: string;
 }
@@ -52,7 +52,11 @@ export default function AdminProductForm({
     const res = await fetch(isEdit ? `/api/products/${initial!.id}` : "/api/products", {
       method: isEdit ? "PATCH" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
+      body: JSON.stringify({
+        ...values,
+        priceClp: Number(values.priceClp),
+        stock: Number(values.stock),
+      }),
     });
 
     setLoading(false);
@@ -72,6 +76,7 @@ export default function AdminProductForm({
         <label className="mb-1 block text-sm font-medium">Nombre</label>
         <input
           required
+          placeholder="Ej.: Cojín personalizado de perro"
           value={values.name}
           onChange={(e) => setValues({ ...values, name: e.target.value })}
           className="w-full border border-base-gray-300 p-2 text-sm"
@@ -83,6 +88,7 @@ export default function AdminProductForm({
         <input
           required
           pattern="[a-z0-9-]+"
+          placeholder="Ej.: cojin-personalizado-perro"
           value={values.slug}
           onChange={(e) => setValues({ ...values, slug: e.target.value })}
           className="w-full border border-base-gray-300 p-2 text-sm"
@@ -94,6 +100,7 @@ export default function AdminProductForm({
         <textarea
           required
           rows={4}
+          placeholder="Describe materiales, tamaño, personalización y cuidados del producto."
           value={values.description}
           onChange={(e) => setValues({ ...values, description: e.target.value })}
           className="w-full border border-base-gray-300 p-2 text-sm"
@@ -108,7 +115,19 @@ export default function AdminProductForm({
             required
             min={0}
             value={values.priceClp}
-            onChange={(e) => setValues({ ...values, priceClp: Number(e.target.value) })}
+            placeholder="Ej.: 19990"
+            onFocus={() =>
+              values.priceClp === 0 && setValues({ ...values, priceClp: "" })
+            }
+            onBlur={() =>
+              values.priceClp === "" && setValues({ ...values, priceClp: 0 })
+            }
+            onChange={(e) =>
+              setValues({
+                ...values,
+                priceClp: e.target.value === "" ? "" : Number(e.target.value),
+              })
+            }
             className="w-full border border-base-gray-300 p-2 text-sm"
           />
         </div>
@@ -119,7 +138,15 @@ export default function AdminProductForm({
             required
             min={0}
             value={values.stock}
-            onChange={(e) => setValues({ ...values, stock: Number(e.target.value) })}
+            placeholder="Ej.: 10"
+            onFocus={() => values.stock === 0 && setValues({ ...values, stock: "" })}
+            onBlur={() => values.stock === "" && setValues({ ...values, stock: 0 })}
+            onChange={(e) =>
+              setValues({
+                ...values,
+                stock: e.target.value === "" ? "" : Number(e.target.value),
+              })
+            }
             className="w-full border border-base-gray-300 p-2 text-sm"
           />
         </div>

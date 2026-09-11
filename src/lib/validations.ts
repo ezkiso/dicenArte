@@ -30,16 +30,32 @@ export async function validateImageFile(buffer: Buffer) {
 // ---------- Esquemas de datos ----------
 
 export const productSchema = z.object({
-  name: z.string().min(2).max(150),
+  name: z
+    .string({ required_error: "El nombre del producto es obligatorio." })
+    .min(2, "El nombre del producto debe tener al menos 2 caracteres.")
+    .max(150, "El nombre del producto no puede superar los 150 caracteres."),
   slug: z
-    .string()
-    .min(2)
-    .regex(/^[a-z0-9-]+$/, "El slug solo puede tener minúsculas, números y guiones"),
-  description: z.string().min(10),
-  priceClp: z.number().int().positive(),
-  stock: z.number().int().min(0),
-  isCustom: z.boolean(),
-  categoryId: z.string().cuid(),
+    .string({ required_error: "El slug es obligatorio." })
+    .min(2, "El slug debe tener al menos 2 caracteres.")
+    .regex(
+      /^[a-z0-9-]+$/,
+      "El slug solo puede contener minúsculas, números y guiones."
+    ),
+  description: z
+    .string({ required_error: "La descripción es obligatoria." })
+    .min(10, "La descripción debe tener al menos 10 caracteres."),
+  priceClp: z
+    .number({ required_error: "El precio es obligatorio." })
+    .int("El precio debe ser un número entero.")
+    .positive("El precio debe ser mayor que 0."),
+  stock: z
+    .number({ required_error: "El stock es obligatorio." })
+    .int("El stock debe ser un número entero.")
+    .min(0, "El stock no puede ser negativo."),
+  isCustom: z.boolean({ required_error: "Indica si el producto es personalizado." }),
+  categoryId: z
+    .string({ required_error: "Selecciona una categoría." })
+    .cuid("La categoría seleccionada no es válida."),
 });
 
 // RF-06/07: datos de checkout. Ya no hay registro previo, así que aquí se

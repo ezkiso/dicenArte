@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { commitTransaction } from "@/lib/webpay";
 import { prisma } from "@/lib/prisma";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dicenarte.cl";
 
 /**
  * Marca la orden como RECHAZADA y repone el stock reservado en el checkout.

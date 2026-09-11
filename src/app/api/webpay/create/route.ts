@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createTransaction } from "@/lib/webpay";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dicenarte.cl";
 
 // RF-09: el checkout ahora admite compra de invitado, así que ya no se
 // exige sesión. La orden se identifica por su `orderId` (un cuid
