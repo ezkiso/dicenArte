@@ -1,3 +1,4 @@
+//src/app/checkout/page.tsx
 import CheckoutForm from "@/components/CheckoutForm";
 
 // El checkout ahora admite compra de invitado: ya no exige sesión iniciada.

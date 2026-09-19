@@ -112,23 +112,25 @@ model ProductImage {
 // RF-06/07/09: la orden ya no depende de una cuenta; guarda los datos del
 // cliente directamente para soportar compra de invitado.
 model Order {
-  id               String      @id @default(cuid())
-  userId           String?
-  user             User?       @relation(fields: [userId], references: [id])
-  customerName     String
-  customerEmail    String
-  customerPhone    String?
-  status           OrderStatus @default(PENDIENTE)
-  totalClp         Int
-  shippingAddress  String      @db.Text
-  retractoAceptado Boolean     @default(false) // RF-07
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-
-  items            OrderItem[]
-  payment          Payment?
-  boleta           Boleta?
-  statusLogs       OrderStatusLog[] // RNF-14 trazabilidad
+  id                String       @id @default(cuid())
+  userId            String?
+  user              User?        @relation(fields: [userId], references: [id])
+  customerFirstName String
+  customerLastName  String
+  customerEmail     String
+  customerPhone     String?
+  status            OrderStatus  @default(PENDIENTE)
+  totalClp          Int
+  shippingAddress   String       @db.Text
+  shippingLat       Float?
+  shippingLng       Float?
+  retractoAceptado  Boolean      @default(false) // RF-07
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  items             OrderItem[]
+  payment           Payment?
+  boleta            Boleta?
+  statusLogs        OrderStatusLog[] // RNF-14 trazabilidad
 }
 
 model OrderItem {

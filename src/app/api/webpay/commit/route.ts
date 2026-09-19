@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { commitTransaction } from "@/lib/webpay";
 import { prisma } from "@/lib/prisma";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dicenarte.cl";
+import { sendOrderConfirmationEmails } from "@/lib/orderEmail";
 
 /**
  * Marca la orden como RECHAZADA y repone el stock reservado en el checkout.
@@ -50,6 +49,7 @@ async function markRejectedAndRestock(orderId: string, note: string) {
  * podrían ser manipulados por el cliente.
  */
 async function handleReturn(req: NextRequest) {
+  const siteUrl = req.nextUrl.origin;
   const formData = await req.formData().catch(() => null);
   const params = formData ?? req.nextUrl.searchParams;
 
@@ -92,7 +92,7 @@ async function handleReturn(req: NextRequest) {
     const approved =
       matchesOrder && result.status === "AUTHORIZED" && result.response_code === 0;
     const resultNote = matchesOrder
-      ? `Transbank respondió: ${result.status}`
+      ? `Transbank respondió: ${result.status} (código ${result.response_code})`
       : "Respuesta Webpay no coincide con la orden almacenada";
 
     await prisma.payment.update({
@@ -105,18 +105,34 @@ async function handleReturn(req: NextRequest) {
     });
 
     if (approved) {
-      await prisma.order.update({
-        where: { id: payment.orderId, status: "PENDIENTE" },
-        data: {
-          status: "PAGADA",
-          statusLogs: { create: { status: "PAGADA", note: resultNote } },
-        },
+      const markedAsPaid = await prisma.$transaction(async (tx) => {
+        const updated = await tx.order.updateMany({
+          where: { id: payment.orderId, status: "PENDIENTE" },
+          data: { status: "PAGADA" },
+        });
+
+        if (updated.count !== 1) return false;
+
+        await tx.orderStatusLog.create({
+          data: { orderId: payment.orderId, status: "PAGADA", note: resultNote },
+        });
+        return true;
       });
 
       // RF-11: al confirmarse el pago, se dispara la emisión de boleta
       // electrónica. Se deja como stub — reemplazar por la llamada real al
       // proveedor autorizado por el SII que se contrate.
       await emitBoletaStub(payment.orderId, payment.amountClp);
+
+      if (markedAsPaid) {
+        try {
+          await sendOrderConfirmationEmails(payment.orderId);
+        } catch (error) {
+          // El pago ya fue confirmado: un fallo del proveedor de correo no
+          // debe cambiar el resultado mostrado al comprador.
+          console.error("No se pudieron enviar los emails de la orden.", error);
+        }
+      }
     } else {
       // Pago rechazado por Transbank (o respuesta no coincide con la
       // orden): se repone el stock reservado en el checkout.

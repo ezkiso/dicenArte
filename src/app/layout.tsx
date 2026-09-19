@@ -39,7 +39,7 @@ export const metadata: Metadata = {
       "Productos textiles personalizados con fotografías del cliente, diseñados a pedido y entregados en todo Chile.",
     url: siteUrl,
     siteName: "Dicen Arte",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Dicen Arte" }],
+    images: [{ url: "/og-image.jpeg", width: 1200, height: 630, alt: "Dicen Arte" }],
     locale: "es_CL",
     type: "website",
   },
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     title: "Dicen Arte | Cojines y bolsas personalizados",
     description:
       "Cojines y bolsas personalizadas en Chile con estampados a pedido y regalos con fotos.",
-    images: ["/og-image.png"],
+    images: ["/og-image.jpeg"],
   },
   robots: { index: true, follow: true },
 };

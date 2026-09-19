@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { formatClp } from "@/lib/utils";
+import Link from "next/link";
 
 // RF-18: listado de pedidos, solo lectura.
 export default async function AdminOrdersPage() {
@@ -20,6 +21,7 @@ export default async function AdminOrdersPage() {
             <th className="py-2">Total</th>
             <th className="py-2">Estado</th>
             <th className="py-2">Fecha</th>
+            <th className="py-2">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -43,6 +45,11 @@ export default async function AdminOrdersPage() {
               </td>
               <td className="py-2 text-base-gray-500">
                 {o.createdAt.toLocaleDateString("es-CL")}
+              </td>
+              <td className="py-2">
+                <Link href={`/admin/pedidos/${o.id}`} className="underline">
+                  Ver detalles
+                </Link>
               </td>
             </tr>
           ))}

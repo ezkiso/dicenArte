@@ -3,6 +3,24 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { productSchema } from "@/lib/validations";
+import { slugify } from "@/lib/utils";
+
+async function getUniqueSlug(name: string, excludeId: string) {
+  const base = slugify(name) || "producto";
+  let candidate = base;
+  let suffix = 2;
+
+  while (
+    await prisma.product.findFirst({
+      where: { slug: candidate, NOT: { id: excludeId } },
+    })
+  ) {
+    candidate = `${base}-${suffix}`;
+    suffix += 1;
+  }
+
+  return candidate;
+}
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
@@ -33,7 +51,15 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     );
   }
 
-  const product = await prisma.product.update({ where: { id: params.id }, data: parsed.data });
+  const existing = await prisma.product.findUnique({ where: { id: params.id } });
+  if (!existing) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+
+  const data = { ...parsed.data };
+  if (data.slug === "") {
+    data.slug = await getUniqueSlug(data.name ?? existing.name, params.id);
+  }
+
+  const product = await prisma.product.update({ where: { id: params.id }, data });
   return NextResponse.json(product);
 }
 

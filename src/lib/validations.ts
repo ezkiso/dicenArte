@@ -35,12 +35,17 @@ export const productSchema = z.object({
     .min(2, "El nombre del producto debe tener al menos 2 caracteres.")
     .max(150, "El nombre del producto no puede superar los 150 caracteres."),
   slug: z
-    .string({ required_error: "El slug es obligatorio." })
-    .min(2, "El slug debe tener al menos 2 caracteres.")
-    .regex(
-      /^[a-z0-9-]+$/,
-      "El slug solo puede contener minúsculas, números y guiones."
-    ),
+    .union([
+      z
+        .string()
+        .trim()
+        .regex(
+          /^[a-z0-9-]+$/,
+          "El slug solo puede contener minúsculas, números y guiones."
+        ),
+      z.literal(""),
+    ])
+    .optional(),
   description: z
     .string({ required_error: "La descripción es obligatoria." })
     .min(10, "La descripción debe tener al menos 10 caracteres."),
@@ -71,16 +76,19 @@ export const checkoutSchema = z.object({
     )
     .min(1, "El carrito está vacío.")
     .max(50, "El carrito tiene demasiados productos."),
-  customerName: z.string().min(2, "Ingresa tu nombre completo"),
+  customerFirstName: z.string().min(2, "Ingresa tu nombre"),
+  customerLastName: z.string().min(2, "Ingresa tu apellido"),
+  // El .email() de Zod ya exige un "@" y un dominio con punto (ej. algo.cl).
   customerEmail: z.string().email("Correo inválido"),
   customerPhone: z.string().min(8).max(20).optional(),
   shippingAddress: z.string().min(10, "Ingresa una dirección de despacho completa"),
-  // RF-07: aceptación explícita del aviso de derecho a retracto
+  // Solo se aceptan si vienen de una selección real en el mapa/autocompletar,
+  // nunca de texto libre sin confirmar (ver CheckoutForm.tsx).
+  shippingLat: z.number(),
+  shippingLng: z.number(),
   retractoAceptado: z.literal(true, {
     errorMap: () => ({ message: "Debes aceptar la política de derecho a retracto." }),
   }),
-  // RF-12: consentimiento de datos, ahora en el checkout (aplica también a
-  // compras de invitado, ya que no existe un paso de registro previo).
   dataConsent: z.literal(true, {
     errorMap: () => ({ message: "Debes aceptar el tratamiento de tus datos personales." }),
   }),

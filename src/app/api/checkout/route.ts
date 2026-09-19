@@ -67,16 +67,19 @@ export async function POST(req: NextRequest) {
     const order = await prisma.$transaction(async (tx) => {
       const newOrder = await tx.order.create({
         data: {
-          userId: session?.user?.id ?? null,
-          customerName: parsed.data.customerName,
-          customerEmail: parsed.data.customerEmail,
-          customerPhone: parsed.data.customerPhone,
-          totalClp: total,
-          shippingAddress: parsed.data.shippingAddress,
-          retractoAceptado: parsed.data.retractoAceptado,
-          items: { create: validOrderItems },
-          statusLogs: { create: { status: "PENDIENTE", note: "Orden creada" } },
-        },
+        userId: session?.user?.id ?? null,
+        customerFirstName: parsed.data.customerFirstName,
+        customerLastName: parsed.data.customerLastName,
+        customerEmail: parsed.data.customerEmail,
+        customerPhone: parsed.data.customerPhone,
+        totalClp: total,
+        shippingAddress: parsed.data.shippingAddress,
+        shippingLat: parsed.data.shippingLat,
+        shippingLng: parsed.data.shippingLng,
+        retractoAceptado: parsed.data.retractoAceptado,
+        items: { create: validOrderItems },
+        statusLogs: { create: { status: "PENDIENTE", note: "Orden creada" } },
+      },
       });
 
       for (const item of validOrderItems) {

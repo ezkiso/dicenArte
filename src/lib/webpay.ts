@@ -103,8 +103,8 @@ export function verifyWebhookSignature(rawBody: string, signatureHeader: string 
     .update(rawBody)
     .digest("hex");
 
-  const provided = Buffer.from(signatureHeader);
-  const expectedBuf = Buffer.from(expected);
+  const provided = Uint8Array.from(Buffer.from(signatureHeader));
+  const expectedBuf = Uint8Array.from(Buffer.from(expected));
 
   if (provided.length !== expectedBuf.length) return false;
   return crypto.timingSafeEqual(provided, expectedBuf);

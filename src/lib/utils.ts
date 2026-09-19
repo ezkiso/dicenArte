@@ -12,4 +12,15 @@ export function formatClp(amount: number) {
   }).format(amount);
 }
 
+export function slugify(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
 export const CURRENT_POLICY_VERSION = "2026-08-25";

@@ -84,11 +84,10 @@ export default function AdminProductForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium">Slug (URL)</label>
+        <label className="mb-1 block text-sm font-medium">Slug (URL, opcional)</label>
         <input
-          required
           pattern="[a-z0-9-]+"
-          placeholder="Ej.: cojin-personalizado-perro"
+          placeholder="Se generará desde el nombre si lo dejas vacío"
           value={values.slug}
           onChange={(e) => setValues({ ...values, slug: e.target.value })}
           className="w-full border border-base-gray-300 p-2 text-sm"

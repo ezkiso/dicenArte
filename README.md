@@ -52,6 +52,9 @@ Ver `.env.example` para el detalle completo. Resumen de las más importantes:
 | `NEXTAUTH_URL` | URL pública del sitio (usada por Auth.js) |
 | `TBK_COMMERCE_CODE` / `TBK_API_KEY` | Credenciales Webpay (sandbox por defecto) |
 | `TBK_ENVIRONMENT` | `integration` o `production` |
+| `RESEND_API_KEY` | API key del proveedor de correo |
+| `RESEND_FROM_EMAIL` | Remitente verificado, por ejemplo `DicenArte <pedidos@tudominio.cl>` |
+| `ADMIN_EMAIL` | Opcional; si falta, se usa el correo del usuario con rol `ADMIN` |
 | `S3_*` | Credenciales del bucket privado de imágenes |
 | `SII_PROVIDER_*` | Credenciales del proveedor de boletas electrónicas |
 
@@ -141,7 +144,7 @@ código, tal como pide el encargo:
 2. **Reposición de stock en pagos fallidos:** actualmente el stock se
    descuenta al crear la orden `PENDIENTE`; falta un job/endpoint que lo
    reponga si Webpay rechaza el pago (`src/app/api/checkout/route.ts`).
-3. **Imagen Open Graph real** (`public/og-image.png`, 1200×630px).
+3. **Imagen Open Graph real** (`public/og-image.jpeg`, 1200×630px).
 4. **Auditoría fina de logs** (RNF-14): ya existe `OrderStatusLog`; falta
    una vista de admin para revisarlo en detalle (hoy solo se ve el estado
    actual en `/admin/pedidos`).

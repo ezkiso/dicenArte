@@ -3,6 +3,20 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { productSchema } from "@/lib/validations";
+import { slugify } from "@/lib/utils";
+
+async function getUniqueSlug(name: string) {
+  const base = slugify(name) || "producto";
+  let candidate = base;
+  let suffix = 2;
+
+  while (await prisma.product.findUnique({ where: { slug: candidate } })) {
+    candidate = `${base}-${suffix}`;
+    suffix += 1;
+  }
+
+  return candidate;
+}
 
 // Lectura pública (usada por la tienda / admin listado)
 export async function GET() {
@@ -29,6 +43,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const product = await prisma.product.create({ data: parsed.data });
+  const { slug, ...productData } = parsed.data;
+  const product = await prisma.product.create({
+    data: { ...productData, slug: slug || (await getUniqueSlug(parsed.data.name)) },
+  });
   return NextResponse.json(product, { status: 201 });
 }

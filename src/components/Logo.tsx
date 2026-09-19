@@ -16,7 +16,7 @@ export default function Logo({ inverted = false }: { inverted?: boolean }) {
       aria-label="DicenArte — Inicio"
     >
       <Image
-        src="/logo.jpg"
+        src="/logo.jpeg"
         alt="Logo DicenArte"
         width={60}
         height={60}

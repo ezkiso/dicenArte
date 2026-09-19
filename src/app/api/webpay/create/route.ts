@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createTransaction } from "@/lib/webpay";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dicenarte.cl";
-
 // RF-09: el checkout ahora admite compra de invitado, así que ya no se
 // exige sesión. La orden se identifica por su `orderId` (un cuid
 // impredecible de 25 caracteres), que actúa como token de acceso.
@@ -29,7 +27,7 @@ export async function POST(req: NextRequest) {
       buyOrder,
       sessionId: order.id,
       amount: order.totalClp,
-      returnUrl: `${siteUrl}/api/webpay/commit`,
+      returnUrl: `${new URL("/api/webpay/commit", req.url)}`,
     });
 
     await prisma.payment.upsert({
