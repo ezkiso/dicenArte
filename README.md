@@ -57,6 +57,8 @@ Ver `.env.example` para el detalle completo. Resumen de las más importantes:
 | `ADMIN_EMAIL` | Opcional; si falta, se usa el correo del usuario con rol `ADMIN` |
 | `S3_*` | Credenciales del bucket privado de imágenes |
 | `SII_PROVIDER_*` | Credenciales del proveedor de boletas electrónicas |
+| `WAREHOUSE_LAT` / `WAREHOUSE_LNG` | Coordenadas de la bodega para calcular el despacho |
+| `SHIPPING_MAX_DISTANCE_KM` | Distancia máxima de despacho; por defecto `25` |
 
 ## 4. Probar un pago de prueba (sandbox Webpay)
 

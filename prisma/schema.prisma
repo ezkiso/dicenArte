@@ -121,6 +121,8 @@ model Order {
   customerPhone     String?
   status            OrderStatus  @default(PENDIENTE)
   totalClp          Int
+  shippingCostClp   Int          @default(0)
+  shippingDistanceKm Float       @default(0)
   shippingAddress   String       @db.Text
   shippingLat       Float?
   shippingLng       Float?

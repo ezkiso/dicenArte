@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { useCartStore } from "@/lib/cartStore";
 import { formatClp } from "@/lib/utils";
+import type { ShippingQuote } from "@/lib/shipping";
 
 
 const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -20,9 +21,12 @@ export default function CheckoutForm() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [deliveryMethod, setDeliveryMethod] = useState<"DELIVERY" | "PICKUP">("DELIVERY");
   const [address, setAddress] = useState("");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [addressVerified, setAddressVerified] = useState(false);
+  const [shippingQuote, setShippingQuote] = useState<ShippingQuote | null>(null);
+  const [shippingLoading, setShippingLoading] = useState(false);
   const [retracto, setRetracto] = useState(false);
   const [dataConsent, setDataConsent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -35,9 +39,38 @@ export default function CheckoutForm() {
   const markerRef = useRef<google.maps.Marker | null>(null);
   const geocoderRef = useRef<google.maps.Geocoder | null>(null);
 
+  async function fetchShippingQuote(lat: number, lng: number) {
+    setShippingLoading(true);
+    setShippingQuote(null);
+
+    try {
+      const response = await fetch("/api/shipping/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lat, lng }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setAddressVerified(false);
+        setError(data.error ?? "No se pudo calcular el valor del despacho.");
+        return;
+      }
+
+      setShippingQuote(data as ShippingQuote);
+      setError(null);
+    } catch {
+      setAddressVerified(false);
+      setError("No se pudo calcular el valor del despacho.");
+    } finally {
+      setShippingLoading(false);
+    }
+  }
+
   // Inicializa el mapa, el marcador arrastrable y el autocompletar de
   // direcciones una vez que el script de Google Maps terminó de cargar.
   useEffect(() => {
+    if (deliveryMethod === "PICKUP") return;
     if (!mapsReady || !mapDivRef.current || !addressInputRef.current) return;
 
     geocoderRef.current = new google.maps.Geocoder();
@@ -70,6 +103,7 @@ export default function CheckoutForm() {
           setAddress(results[0].formatted_address);
           setCoords({ lat, lng });
           setAddressVerified(true);
+          void fetchShippingQuote(lat, lng);
         } else {
           setAddressVerified(false);
           setError("No pudimos reconocer una dirección en ese punto del mapa.");
@@ -97,12 +131,13 @@ export default function CheckoutForm() {
       setCoords({ lat, lng });
       setAddressVerified(true);
       setError(null);
+      void fetchShippingQuote(lat, lng);
 
       map.setCenter({ lat, lng });
       map.setZoom(16);
       marker.setPosition({ lat, lng });
     });
-  }, [mapsReady]);
+  }, [mapsReady, deliveryMethod]);
 
   // Si el usuario sigue tipeando a mano después de haber confirmado una
   // dirección (por el autocompletar o el mapa), invalidamos la selección:
@@ -110,6 +145,20 @@ export default function CheckoutForm() {
   function handleAddressInputChange(value: string) {
     setAddress(value);
     setAddressVerified(false);
+    setShippingQuote(null);
+  }
+
+  function handleDeliveryMethodChange(method: "DELIVERY" | "PICKUP") {
+    setDeliveryMethod(method);
+    setError(null);
+    if (method === "PICKUP") {
+      setAddress("");
+      setCoords(null);
+      setAddressVerified(false);
+      setShippingQuote({ distanceKm: 0, costClp: 0 });
+    } else {
+      setShippingQuote(null);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -121,10 +170,15 @@ export default function CheckoutForm() {
       return;
     }
 
-    if (!addressVerified || !coords) {
+    if (deliveryMethod === "DELIVERY" && (!addressVerified || !coords)) {
       setError(
         "Selecciona tu dirección desde las sugerencias mientras escribes, o arrastra el marcador en el mapa. No podemos aceptar una dirección sin confirmar."
       );
+      return;
+    }
+
+    if (!shippingQuote) {
+      setError("Espera a que se calcule el valor del despacho.");
       return;
     }
 
@@ -138,9 +192,10 @@ export default function CheckoutForm() {
           customerLastName: lastName,
           customerEmail: email,
           customerPhone: phone || undefined,
+          deliveryMethod,
           shippingAddress: address,
-          shippingLat: coords.lat,
-          shippingLng: coords.lng,
+          shippingLat: coords?.lat ?? null,
+          shippingLng: coords?.lng ?? null,
           retractoAceptado: retracto,
           dataConsent,
           items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
@@ -248,7 +303,37 @@ export default function CheckoutForm() {
           </div>
         </div>
 
-        <div>
+        <fieldset>
+          <legend className="mb-2 block text-sm font-medium">Método de entrega</legend>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="flex cursor-pointer items-start gap-2 border border-base-gray-300 p-3 text-sm">
+              <input
+                type="radio"
+                name="deliveryMethod"
+                checked={deliveryMethod === "DELIVERY"}
+                onChange={() => handleDeliveryMethodChange("DELIVERY")}
+              />
+              <span>
+                <strong>Despacho a domicilio</strong>
+                <span className="mt-1 block text-xs text-base-gray-500">Calculamos el valor según la dirección.</span>
+              </span>
+            </label>
+            <label className="flex cursor-pointer items-start gap-2 border border-base-gray-300 p-3 text-sm">
+              <input
+                type="radio"
+                name="deliveryMethod"
+                checked={deliveryMethod === "PICKUP"}
+                onChange={() => handleDeliveryMethodChange("PICKUP")}
+              />
+              <span>
+                <strong>Retiro en tienda</strong>
+                <span className="mt-1 block text-xs text-base-gray-500">Sin costo de despacho.</span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
+        {deliveryMethod === "DELIVERY" && <div>
           <label htmlFor="address" className="mb-1 block text-sm font-medium">
             Dirección de despacho
           </label>
@@ -274,7 +359,25 @@ export default function CheckoutForm() {
               Dirección aún sin confirmar
             </p>
           )}
+          {shippingLoading && (
+            <p className="mt-2 text-sm text-base-gray-600">Calculando valor del despacho…</p>
+          )}
+          {shippingQuote && !shippingLoading && (
+            <div className="mt-3 border border-base-gray-200 bg-base-gray-50 p-3 text-sm">
+              <div className="flex justify-between gap-4">
+                <span>Despacho ({shippingQuote.distanceKm.toFixed(2)} km)</span>
+                <span className="font-semibold">{formatClp(shippingQuote.costClp)}</span>
+              </div>
+            </div>
+          )}
         </div>
+        }
+
+        {deliveryMethod === "PICKUP" && (
+          <div className="border border-base-gray-200 bg-base-gray-50 p-3 text-sm">
+            Retirarás tu pedido en la tienda. No se solicitará dirección y el despacho es gratis.
+          </div>
+        )}
 
         <div className="border border-base-gray-300 bg-base-gray-50 p-4 text-sm">
           <p className="font-semibold">Antes de continuar:</p>
@@ -320,7 +423,13 @@ export default function CheckoutForm() {
         {error && <p className="text-sm text-red-700">{error}</p>}
 
         <div className="flex items-center justify-between border-t border-base-gray-200 pt-4">
-          <p className="text-lg font-semibold">Total: {formatClp(total)}</p>
+          <div className="text-right text-sm">
+            <p>Productos: {formatClp(total)}</p>
+            <p>Despacho: {shippingQuote ? formatClp(shippingQuote.costClp) : "Por calcular"}</p>
+            <p className="mt-1 text-lg font-semibold">
+              Total: {formatClp(total + (shippingQuote?.costClp ?? 0))}
+            </p>
+          </div>
           <button
             type="submit"
             disabled={loading || items.length === 0}

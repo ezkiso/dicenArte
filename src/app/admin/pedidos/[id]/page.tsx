@@ -106,6 +106,8 @@ export default async function AdminOrderDetailPage({
           </table>
         </div>
         <div className="mt-4 flex justify-end border-t border-base-gray-200 pt-4">
+          <p className="text-sm">Despacho: {formatClp(order.shippingCostClp)}</p>
+          <p className="text-sm">Distancia: {order.shippingDistanceKm.toFixed(2)} km</p>
           <p className="text-lg font-semibold">Total: {formatClp(order.totalClp)}</p>
         </div>
       </section>

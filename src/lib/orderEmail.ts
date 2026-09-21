@@ -17,9 +17,7 @@ export async function sendOrderConfirmationEmails(orderId: string) {
 
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    include: {
-      items: { include: { product: true } },
-    },
+    include: { items: { include: { product: true } } },
   });
   if (!order) return;
 
@@ -50,8 +48,8 @@ export async function sendOrderConfirmationEmails(orderId: string) {
     )
     .join("");
   const orderNumber = order.id.slice(-8).toUpperCase();
-  const subject = `Compra confirmada #${orderNumber} - DicenArte`;
-  const text = [
+  const customerSubject = `Compra confirmada #${orderNumber} - DicenArte`;
+  const customerText = [
     `Hola ${customerName},`,
     "",
     `Tu compra fue confirmada. Orden #${orderNumber}`,
@@ -63,7 +61,7 @@ export async function sendOrderConfirmationEmails(orderId: string) {
     "",
     "Gracias por comprar en DicenArte.",
   ].join("\n");
-  const html = `
+  const customerHtml = `
     <h1>Compra confirmada</h1>
     <p>Hola ${escapeHtml(customerName)},</p>
     <p>Tu compra fue confirmada. Orden <strong>#${orderNumber}</strong>.</p>
@@ -75,18 +73,50 @@ export async function sendOrderConfirmationEmails(orderId: string) {
   `;
 
   const resend = new Resend(apiKey);
-  const recipients = [...new Set([order.customerEmail.trim(), adminEmail])];
-  const { data, error } = await resend.emails.send({
+  const adminResult = await resend.emails.send({
     from,
-    to: recipients,
-    subject,
-    text,
-    html,
+    to: adminEmail,
+    subject: `Nueva venta #${orderNumber} - DicenArte`,
+    text: [
+      `Nueva venta confirmada: orden #${orderNumber}`,
+      `Cliente: ${customerName}`,
+      `Correo: ${order.customerEmail}`,
+      "",
+      ...itemLines,
+      "",
+      `Total: ${formatClp(order.totalClp)}`,
+      `Dirección de despacho: ${order.shippingAddress}`,
+    ].join("\n"),
+    html: `
+      <h1>Nueva venta confirmada</h1>
+      <p>Orden <strong>#${orderNumber}</strong></p>
+      <p><strong>Cliente:</strong> ${escapeHtml(customerName)}</p>
+      <p><strong>Correo:</strong> ${escapeHtml(order.customerEmail)}</p>
+      <h2>Detalle de la compra</h2>
+      <ul>${itemHtml}</ul>
+      <p><strong>Total: ${escapeHtml(formatClp(order.totalClp))}</strong></p>
+      <p><strong>Dirección de despacho:</strong> ${escapeHtml(order.shippingAddress)}</p>
+    `,
   });
-
-  if (error) {
-    throw new Error(`Resend rechazó el email: ${error.message}`);
+  if (adminResult.error) {
+    throw new Error(`Resend rechazó el email para ${adminEmail}: ${adminResult.error.message}`);
   }
 
-  console.info(`Email de confirmación enviado para ${orderNumber}: ${data?.id ?? "sin-id"}`);
+  const customerEmail = order.customerEmail.trim();
+  if (customerEmail !== adminEmail) {
+    const customerResult = await resend.emails.send({
+      from,
+      to: customerEmail,
+      subject: customerSubject,
+      text: customerText,
+      html: customerHtml,
+    });
+    if (customerResult.error) {
+      throw new Error(`Resend rechazó el email para ${customerEmail}: ${customerResult.error.message}`);
+    }
+  }
+
+  console.info(
+    `Email de venta enviado al administrador para ${orderNumber}: ${adminResult.data?.id ?? "sin-id"}`
+  );
 }

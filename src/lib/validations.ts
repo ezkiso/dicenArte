@@ -81,17 +81,35 @@ export const checkoutSchema = z.object({
   // El .email() de Zod ya exige un "@" y un dominio con punto (ej. algo.cl).
   customerEmail: z.string().email("Correo inválido"),
   customerPhone: z.string().min(8).max(20).optional(),
-  shippingAddress: z.string().min(10, "Ingresa una dirección de despacho completa"),
+  deliveryMethod: z.enum(["DELIVERY", "PICKUP"]),
+  shippingAddress: z.string().optional(),
   // Solo se aceptan si vienen de una selección real en el mapa/autocompletar,
   // nunca de texto libre sin confirmar (ver CheckoutForm.tsx).
-  shippingLat: z.number(),
-  shippingLng: z.number(),
+  shippingLat: z.number().nullable().optional(),
+  shippingLng: z.number().nullable().optional(),
   retractoAceptado: z.literal(true, {
     errorMap: () => ({ message: "Debes aceptar la política de derecho a retracto." }),
   }),
   dataConsent: z.literal(true, {
     errorMap: () => ({ message: "Debes aceptar el tratamiento de tus datos personales." }),
   }),
+}).superRefine((data, context) => {
+  if (data.deliveryMethod === "DELIVERY") {
+    if (!data.shippingAddress || data.shippingAddress.length < 10) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["shippingAddress"],
+        message: "Ingresa una dirección de despacho completa",
+      });
+    }
+    if (typeof data.shippingLat !== "number" || typeof data.shippingLng !== "number") {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["shippingLat"],
+        message: "Confirma la dirección en el mapa",
+      });
+    }
+  }
 });
 
 export const consentSchema = z.object({

@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkoutSchema } from "@/lib/validations";
 import { CURRENT_POLICY_VERSION } from "@/lib/utils";
+import { calculateShippingQuote } from "@/lib/shipping";
 
 // RF-06/07: crea la orden a partir de los ítems del carrito.
 // Ya no exige sesión iniciada: admite compra como invitado. Si por algún
@@ -63,6 +64,20 @@ export async function POST(req: NextRequest) {
     unitPriceClp: number;
   }[];
 
+  let shippingQuote: { distanceKm: number; costClp: number };
+  if (parsed.data.deliveryMethod === "PICKUP") {
+    shippingQuote = { distanceKm: 0, costClp: 0 };
+  } else {
+    try {
+      shippingQuote = calculateShippingQuote(parsed.data.shippingLat!, parsed.data.shippingLng!);
+    } catch (err) {
+      return NextResponse.json(
+        { error: err instanceof Error ? err.message : "No se pudo calcular el despacho." },
+        { status: 400 }
+      );
+    }
+  }
+
   try {
     const order = await prisma.$transaction(async (tx) => {
       const newOrder = await tx.order.create({
@@ -72,10 +87,15 @@ export async function POST(req: NextRequest) {
         customerLastName: parsed.data.customerLastName,
         customerEmail: parsed.data.customerEmail,
         customerPhone: parsed.data.customerPhone,
-        totalClp: total,
-        shippingAddress: parsed.data.shippingAddress,
-        shippingLat: parsed.data.shippingLat,
-        shippingLng: parsed.data.shippingLng,
+        totalClp: total + shippingQuote.costClp,
+        shippingCostClp: shippingQuote.costClp,
+        shippingDistanceKm: shippingQuote.distanceKm,
+        shippingAddress:
+          parsed.data.deliveryMethod === "PICKUP"
+            ? "Retiro en tienda"
+            : parsed.data.shippingAddress!,
+        shippingLat: parsed.data.deliveryMethod === "PICKUP" ? null : parsed.data.shippingLat,
+        shippingLng: parsed.data.deliveryMethod === "PICKUP" ? null : parsed.data.shippingLng,
         retractoAceptado: parsed.data.retractoAceptado,
         items: { create: validOrderItems },
         statusLogs: { create: { status: "PENDIENTE", note: "Orden creada" } },

@@ -114,6 +114,16 @@ export default async function CheckoutSuccessPage({
         </div>
 
         <div className="mt-4 flex items-center justify-between border-t border-base-gray-200 pt-4">
+          <div>
+            <p className="font-semibold">Despacho</p>
+            <p className="text-xs text-base-gray-500">
+              {order.shippingDistanceKm.toFixed(2)} km desde la bodega
+            </p>
+          </div>
+          <p className="font-semibold">{formatClp(order.shippingCostClp)}</p>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-base-gray-200 pt-4">
           <p className="font-semibold">Total</p>
           <p className="text-lg font-semibold">{formatClp(order.totalClp)}</p>
         </div>
