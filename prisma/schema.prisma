@@ -131,7 +131,7 @@ model Order {
   updatedAt         DateTime     @updatedAt
   items             OrderItem[]
   payment           Payment?
-  boleta            Boleta?
+  // boleta            Boleta? // RF-11 pausado; conservar para futura implementación.
   statusLogs        OrderStatusLog[] // RNF-14 trazabilidad
 }
 
@@ -159,17 +159,18 @@ model Payment {
   createdAt         DateTime  @default(now())
 }
 
-// RF-11: boleta electrónica emitida vía proveedor SII
-model Boleta {
-  id          String   @id @default(cuid())
-  orderId     String   @unique
-  order       Order    @relation(fields: [orderId], references: [id])
-  folio       String?
-  pdfUrl      String?
-  providerRef String?
-  status      String   @default("PENDIENTE")
-  createdAt   DateTime @default(now())
-}
+// RF-11 pausado: la tabla histórica se conserva en la base de datos, pero no
+// se incluye en el cliente Prisma mientras no se implemente la emisión fiscal.
+// model Boleta {
+//   id          String   @id @default(cuid())
+//   orderId     String   @unique
+//   order       Order    @relation(fields: [orderId], references: [id])
+//   folio       String?
+//   pdfUrl      String?
+//   providerRef String?
+//   status      String   @default("PENDIENTE")
+//   createdAt   DateTime @default(now())
+// }
 
 // RNF-14: historial de cambios de estado para auditoría
 model OrderStatusLog {

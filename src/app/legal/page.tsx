@@ -48,7 +48,8 @@ export default function LegalPage() {
         <h2 className="mb-2 font-display text-xl">Tratamiento de datos personales</h2>
         <p className="text-base-gray-700">
           Recopilamos tu nombre, correo, teléfono y dirección exclusivamente para gestionar tu
-          compra, el despacho del pedido y la emisión de la boleta electrónica. No usamos ni
+          compra y el despacho del pedido. El recibo generado por la página es el respaldo de
+          la venta. No usamos ni
           compartimos tus datos con fines distintos, ni con terceros, sin tu autorización
           explícita adicional, en cumplimiento de la Ley N° 19.628 sobre Protección de la Vida
           Privada.

@@ -56,6 +56,13 @@ test.describe("Rutas de API protegidas", () => {
     const response = await request.delete("/api/products/id-cualquiera");
     expect([401, 403]).toContain(response.status());
   });
+
+  test("Cambiar el estado de un pedido sin sesión es rechazado", async ({ request }) => {
+    const response = await request.patch("/api/admin/orders/id-cualquiera/status", {
+      data: { status: "EN_PREPARACION" },
+    });
+    expect(response.status()).toBe(403);
+  });
 });
 
 test.describe("SEO (RNF-10)", () => {

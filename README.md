@@ -135,18 +135,16 @@ dicenarte/
 - **SEO (RNF-10):** `src/app/sitemap.ts`, `src/app/robots.ts`,
   metadatos en `src/app/layout.tsx` y en cada página.
 
-## 8. Pendientes explícitos para el siguiente entregable
+## 8. Estado funcional y pendientes de entrega
 
-Estos quedaron con un stub funcional y comentarios `TODO`/`STUB` en el
-código, tal como pide el encargo:
+### Funcionalidad disponible
 
-1. **Boleta electrónica real (RF-11):** reemplazar `emitBoletaStub` en
-   `src/app/api/webpay/commit/route.ts` por la integración con el proveedor
-   SII contratado.
-2. **Reposición de stock en pagos fallidos:** actualmente el stock se
-   descuenta al crear la orden `PENDIENTE`; falta un job/endpoint que lo
-   reponga si Webpay rechaza el pago (`src/app/api/checkout/route.ts`).
-3. **Imagen Open Graph real** (`public/og-image.jpeg`, 1200×630px).
-4. **Auditoría fina de logs** (RNF-14): ya existe `OrderStatusLog`; falta
-   una vista de admin para revisarlo en detalle (hoy solo se ve el estado
-   actual en `/admin/pedidos`).
+- **Estados operativos de pedidos:** desde el detalle de un pedido pagado, una cuenta ADMIN puede avanzar secuencialmente `PAGADA` → `EN_PREPARACION` → `ENVIADA` → `ENTREGADA`. Cada avance queda en `OrderStatusLog` junto con el administrador y la nota opcional. El panel no modifica estados de pago, no permite retroceder ni anular pedidos.
+- **Reposición de stock:** el flujo de confirmación de Webpay marca como rechazados los pagos fallidos y repone el stock reservado, protegido contra procesamiento duplicado (`src/app/api/webpay/commit/route.ts`).
+- **Historial de pedido:** el detalle administrativo muestra los registros de cambio de estado disponibles.
+
+### Pendientes y verificaciones
+
+1. **Boleta electrónica real (RF-11):** emisión pausada/no implementada. El recibo de la página de confirmación no debe presentarse como boleta tributaria.
+2. **Imagen Open Graph:** verificar que `public/og-image.jpeg` corresponda a la imagen final de marca y tenga las dimensiones esperadas (1200 × 630 px).
+3. **Producción:** confirmar credenciales y pruebas autorizadas de Webpay, remitente de email, dominio, variables y permisos del entorno final antes de afirmar que está listo para vender.

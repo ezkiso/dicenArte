@@ -10,8 +10,8 @@ const webhookSchema = z.object({
 
 /**
  * RF-10: endpoint opcional para notificaciones asíncronas de reconciliación
- * (por ejemplo, un servicio de conciliación de Transbank o un proveedor de
- * boletas que avise por webhook). Valida la firma HMAC con el secreto
+ * (por ejemplo, un servicio de conciliación de Transbank). Valida la firma
+ * HMAC con el secreto
  * compartido `TBK_WEBHOOK_SECRET` ANTES de procesar cualquier cambio de
  * estado. El flujo principal de pago se confirma en `/api/webpay/commit`
  * contra la API de Transbank directamente; este webhook es una capa

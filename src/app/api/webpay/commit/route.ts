@@ -119,10 +119,9 @@ async function handleReturn(req: NextRequest) {
         return true;
       });
 
-      // RF-11: al confirmarse el pago, se dispara la emisión de boleta
-      // electrónica. Se deja como stub — reemplazar por la llamada real al
-      // proveedor autorizado por el SII que se contrate.
-      await emitBoletaStub(payment.orderId, payment.amountClp);
+      // RF-11: emisión de boleta electrónica pausada. El recibo generado en
+      // /checkout/success es actualmente el respaldo de la venta.
+      // await emitBoletaStub(payment.orderId, payment.amountClp);
 
       if (markedAsPaid) {
         try {
@@ -147,22 +146,20 @@ async function handleReturn(req: NextRequest) {
   return NextResponse.redirect(`${siteUrl}/checkout/success?orden=${payment.orderId}`);
 }
 
-/**
- * RF-11: stub de emisión de boleta electrónica.
- * Reemplazar el cuerpo de esta función por la llamada real al proveedor
- * autorizado por el SII (ej. Facturación Simple, OpenFactura, Bsale, etc.),
- * usando `SII_PROVIDER_API_URL` y `SII_PROVIDER_API_KEY` desde el .env.
+/*
+ * RF-11: stub de emisión de boleta electrónica pausado.
+ * Para reactivarlo, reemplazar este cuerpo por la llamada al proveedor
+ * autorizado por el SII y descomentar la invocación anterior.
+ *
+ * async function emitBoletaStub(orderId: string, amountClp: number) {
+ *   console.log(`[STUB] Emitiendo boleta electrónica para orden ${orderId} por $${amountClp}`);
+ *   await prisma.boleta.upsert({
+ *     where: { orderId },
+ *     update: { status: "PENDIENTE" },
+ *     create: { orderId, status: "PENDIENTE" },
+ *   });
+ * }
  */
-async function emitBoletaStub(orderId: string, amountClp: number) {
-  // --- INICIO STUB: reemplazar por integración real con el proveedor SII ---
-  console.log(`[STUB] Emitiendo boleta electrónica para orden ${orderId} por $${amountClp}`);
-  await prisma.boleta.upsert({
-    where: { orderId },
-    update: { status: "PENDIENTE" },
-    create: { orderId, status: "PENDIENTE" },
-  });
-  // --- FIN STUB ---
-}
 
 export const POST = handleReturn;
 export const GET = handleReturn;

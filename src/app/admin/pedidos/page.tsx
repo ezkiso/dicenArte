@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { formatClp } from "@/lib/utils";
+import { ORDER_STATUS_LABELS } from "@/lib/order-status";
 import Link from "next/link";
 
 // RF-18: listado de pedidos, solo lectura.
@@ -40,7 +41,7 @@ export default async function AdminOrdersPage() {
                       : "text-base-gray-600"
                   }
                 >
-                  {o.status}
+                  {ORDER_STATUS_LABELS[o.status]}
                 </span>
               </td>
               <td className="py-2 text-base-gray-500">

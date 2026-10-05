@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatClp } from "@/lib/utils";
+import AdminOrderStatusControl from "@/components/AdminOrderStatusControl";
+import { ORDER_STATUS_LABELS } from "@/lib/order-status";
 
 export default async function AdminOrderDetailPage({
   params,
@@ -12,7 +14,6 @@ export default async function AdminOrderDetailPage({
     where: { id: params.id },
     include: {
       payment: true,
-      boleta: true,
       items: { include: { product: true } },
       statusLogs: { orderBy: { createdAt: "asc" } },
     },
@@ -43,7 +44,7 @@ export default async function AdminOrderDetailPage({
                 : "font-semibold text-base-gray-600"
           }
         >
-          {order.status}
+          {ORDER_STATUS_LABELS[order.status]}
         </span>
       </div>
 
@@ -112,6 +113,8 @@ export default async function AdminOrderDetailPage({
         </div>
       </section>
 
+      <AdminOrderStatusControl orderId={order.id} status={order.status} />
+
       <section className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="border border-base-gray-200 p-4">
           <h2 className="mb-3 font-display text-lg">Pago</h2>
@@ -142,7 +145,7 @@ export default async function AdminOrderDetailPage({
           <ul className="space-y-3 text-sm">
             {order.statusLogs.map((log) => (
               <li key={log.id}>
-                <p className="font-semibold">{log.status}</p>
+                <p className="font-semibold">{ORDER_STATUS_LABELS[log.status]}</p>
                 <p className="text-xs text-base-gray-500">
                   {log.createdAt.toLocaleString("es-CL")}
                   {log.note ? ` - ${log.note}` : ""}

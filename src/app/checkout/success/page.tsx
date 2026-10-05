@@ -17,7 +17,6 @@ export default async function CheckoutSuccessPage({
         where: { id: searchParams.orden },
         include: {
           payment: true,
-          boleta: true,
           items: {
             include: {
               product: {
@@ -67,12 +66,9 @@ export default async function CheckoutSuccessPage({
           Orden #{order.id.slice(-8).toUpperCase()}
         </p>
         <p className="mt-1 text-sm text-base-gray-500">Estado: {order.status}</p>
-
-        {pagada && order.boleta && (
-          <p className="mt-4 text-sm">
-            {order.boleta.status === "EMITIDA"
-              ? "Tu boleta electrónica fue emitida y llegará a tu correo."
-              : "Tu boleta electrónica se está generando; te llegará por correo en breve."}
+        {pagada && (
+          <p className="mt-4 text-sm text-base-gray-600">
+            Este recibo contiene el respaldo de tu compra.
           </p>
         )}
 
