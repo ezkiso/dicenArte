@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import ImageZoom from "@/components/ImageZoom";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { formatClp } from "@/lib/utils";
@@ -57,10 +56,11 @@ export default function FeaturedProductsCarousel({
                 <div key={product.id} className="min-w-full">
                     <div className="relative aspect-[4/2] w-full bg-base-gray-350 sm:aspect-[16/4]">
                         {product.imageUrl ? (
-                            <ImageZoom
-                                src={product.imageUrl}
-                                alt={product.name}
-                                className="absolute inset-0 block h-full w-full cursor-zoom-in"
+                            <Link
+                                href={`/tienda/${product.slug}`}
+                                aria-label={`Ver producto: ${product.name}`}
+                                className="absolute inset-0 block h-full w-full"
+                                tabIndex={index === activeIndex ? 0 : -1}
                             >
                                 <Image
                                     src={product.imageUrl}
@@ -71,7 +71,7 @@ export default function FeaturedProductsCarousel({
                                     sizes="100vw"
                                     className="object-contain transition-transform duration-500 hover:scale-[1.02] motion-reduce:transition-none"
                                 />
-                            </ImageZoom>
+                            </Link>
                         ) : (
                             <div className="flex h-full items-center justify-center text-base-gray-400">
                                 Sin imagen

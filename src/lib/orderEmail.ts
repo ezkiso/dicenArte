@@ -21,15 +21,11 @@ export async function sendOrderConfirmationEmails(orderId: string) {
   });
   if (!order) return;
 
-  const admin = await prisma.user.findFirst({
-    where: { role: "ADMIN" },
-    select: { email: true },
-  });
-  const adminEmail = process.env.ADMIN_EMAIL?.trim() || admin?.email;
+  const salesEmail = process.env.SALES_NOTIFICATION_EMAIL?.trim() || "info@dicenarte.cl";
 
-  if (!apiKey || !from || !adminEmail) {
+  if (!apiKey || !from) {
     console.error(
-      "No se enviaron los emails de la orden: faltan RESEND_API_KEY, RESEND_FROM_EMAIL o ADMIN_EMAIL."
+      "No se enviaron los emails de la orden: faltan RESEND_API_KEY o RESEND_FROM_EMAIL."
     );
     return;
   }
@@ -73,50 +69,54 @@ export async function sendOrderConfirmationEmails(orderId: string) {
   `;
 
   const resend = new Resend(apiKey);
-  const adminResult = await resend.emails.send({
-    from,
-    to: adminEmail,
-    subject: `Nueva venta #${orderNumber} - DicenArte`,
-    text: [
-      `Nueva venta confirmada: orden #${orderNumber}`,
-      `Cliente: ${customerName}`,
-      `Correo: ${order.customerEmail}`,
-      "",
-      ...itemLines,
-      "",
-      `Total: ${formatClp(order.totalClp)}`,
-      `Dirección de despacho: ${order.shippingAddress}`,
-    ].join("\n"),
-    html: `
-      <h1>Nueva venta confirmada</h1>
-      <p>Orden <strong>#${orderNumber}</strong></p>
-      <p><strong>Cliente:</strong> ${escapeHtml(customerName)}</p>
-      <p><strong>Correo:</strong> ${escapeHtml(order.customerEmail)}</p>
-      <h2>Detalle de la compra</h2>
-      <ul>${itemHtml}</ul>
-      <p><strong>Total: ${escapeHtml(formatClp(order.totalClp))}</strong></p>
-      <p><strong>Dirección de despacho:</strong> ${escapeHtml(order.shippingAddress)}</p>
-    `,
-  });
-  if (adminResult.error) {
-    throw new Error(`Resend rechazó el email para ${adminEmail}: ${adminResult.error.message}`);
-  }
-
   const customerEmail = order.customerEmail.trim();
-  if (customerEmail !== adminEmail) {
-    const customerResult = await resend.emails.send({
+  const results = await Promise.allSettled([
+    resend.emails.send({
+      from,
+      to: salesEmail,
+      subject: `Nueva venta #${orderNumber} - DicenArte`,
+      text: [
+        `Nueva venta confirmada: orden #${orderNumber}`,
+        `Cliente: ${customerName}`,
+        `Correo: ${order.customerEmail}`,
+        "",
+        ...itemLines,
+        "",
+        `Total: ${formatClp(order.totalClp)}`,
+        `Dirección de despacho: ${order.shippingAddress}`,
+      ].join("\n"),
+      html: `
+        <h1>Nueva venta confirmada</h1>
+        <p>Orden <strong>#${orderNumber}</strong></p>
+        <p><strong>Cliente:</strong> ${escapeHtml(customerName)}</p>
+        <p><strong>Correo:</strong> ${escapeHtml(order.customerEmail)}</p>
+        <h2>Detalle de la compra</h2>
+        <ul>${itemHtml}</ul>
+        <p><strong>Total: ${escapeHtml(formatClp(order.totalClp))}</strong></p>
+        <p><strong>Dirección de despacho:</strong> ${escapeHtml(order.shippingAddress)}</p>
+      `,
+    }),
+    resend.emails.send({
       from,
       to: customerEmail,
       subject: customerSubject,
       text: customerText,
       html: customerHtml,
-    });
-    if (customerResult.error) {
-      throw new Error(`Resend rechazó el email para ${customerEmail}: ${customerResult.error.message}`);
+    }),
+  ]);
+
+  const failures = results.flatMap((result, index) => {
+    const recipient = index === 0 ? salesEmail : customerEmail;
+    if (result.status === "rejected") {
+      return [`${recipient}: ${result.reason instanceof Error ? result.reason.message : "falló el envío"}`];
     }
+    return result.value.error ? [`${recipient}: ${result.value.error.message}`] : [];
+  });
+  if (failures.length > 0) {
+    throw new Error(`No se pudieron enviar todos los comprobantes: ${failures.join("; ")}`);
   }
 
   console.info(
-    `Email de venta enviado al administrador para ${orderNumber}: ${adminResult.data?.id ?? "sin-id"}`
+    `Comprobantes de la orden ${orderNumber} enviados a ${salesEmail} y ${customerEmail}.`
   );
 }

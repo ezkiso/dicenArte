@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import ImageZoom from "@/components/ImageZoom";
 import { formatClp } from "@/lib/utils";
 
 export interface ProductCardData {
@@ -21,10 +20,10 @@ export default function ProductCard({ product }: { product: ProductCardData }) {
     <article className="group border border-base-gray-200 transition-colors hover:border-base-black">
       <div className="relative aspect-square w-full bg-base-gray-100">
         {product.imageUrl ? (
-          <ImageZoom
-            src={product.imageUrl}
-            alt={product.name}
-            className="absolute inset-0 block h-full w-full cursor-zoom-in"
+          <Link
+            href={`/tienda/${product.slug}`}
+            aria-label={`Ver producto: ${product.name}`}
+            className="absolute inset-0 block h-full w-full"
           >
             <Image
               src={product.imageUrl}
@@ -34,7 +33,7 @@ export default function ProductCard({ product }: { product: ProductCardData }) {
               className="object-cover"
               sizes="(max-width: 768px) 50vw, 25vw"
             />
-          </ImageZoom>
+          </Link>
         ) : (
           <div className="flex h-full items-center justify-center text-base-gray-400">
             Sin imagen
