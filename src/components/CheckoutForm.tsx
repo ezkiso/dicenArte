@@ -6,11 +6,30 @@ import Script from "next/script";
 import { useCartStore } from "@/lib/cartStore";
 import { formatClp } from "@/lib/utils";
 import type { ShippingQuote } from "@/lib/shipping";
+import {
+  getCountries,
+  getCountryCallingCode,
+  parsePhoneNumberFromString,
+  type CountryCode,
+} from "libphonenumber-js";
 
 
 const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 // Centro por defecto: Santiago, Chile.
 const DEFAULT_CENTER = { lat: -33.4489, lng: -70.6693 };
+const countryNames = new Intl.DisplayNames(["es"], { type: "region" });
+const phoneCountries = getCountries()
+  .map((country) => ({
+    country,
+    name: countryNames.of(country) ?? country,
+    callingCode: getCountryCallingCode(country),
+  }))
+  .sort((a, b) => {
+    if (a.country === b.country) return 0;
+    if (a.country === "CL") return -1;
+    if (b.country === "CL") return 1;
+    return a.country.localeCompare(b.country);
+  });
 
 export default function CheckoutForm() {
   const items = useCartStore((s) => s.items);
@@ -21,6 +40,7 @@ export default function CheckoutForm() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneCountry, setPhoneCountry] = useState<CountryCode>("CL");
   const [deliveryMethod, setDeliveryMethod] = useState<"DELIVERY" | "PICKUP">("DELIVERY");
   const [address, setAddress] = useState("");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -33,12 +53,17 @@ export default function CheckoutForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mapsReady, setMapsReady] = useState(false);
+  const [countryNamesReady, setCountryNamesReady] = useState(false);
 
   const addressInputRef = useRef<HTMLInputElement>(null);
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markerRef = useRef<google.maps.Marker | null>(null);
   const geocoderRef = useRef<google.maps.Geocoder | null>(null);
+
+  useEffect(() => {
+    setCountryNamesReady(true);
+  }, []);
 
   async function fetchShippingQuote(placeId: string) {
     setShippingLoading(true);
@@ -188,6 +213,12 @@ export default function CheckoutForm() {
       return;
     }
 
+    const parsedPhone = parsePhoneNumberFromString(phone, phoneCountry);
+    if (!parsedPhone?.isValid()) {
+      setError("Ingresa un número de teléfono válido para el país seleccionado.");
+      return;
+    }
+
     if (deliveryMethod === "DELIVERY" && (!addressVerified || !coords || !shippingPlaceId)) {
       setError(
         "Selecciona tu dirección desde las sugerencias mientras escribes, o arrastra el marcador en el mapa. No podemos aceptar una dirección sin confirmar."
@@ -209,7 +240,7 @@ export default function CheckoutForm() {
           customerFirstName: firstName,
           customerLastName: lastName,
           customerEmail: email,
-          customerPhone: phone || undefined,
+          customerPhone: parsedPhone.number,
           deliveryMethod,
           shippingPlaceId: deliveryMethod === "DELIVERY" ? shippingPlaceId : undefined,
           retractoAceptado: retracto,
@@ -307,15 +338,36 @@ export default function CheckoutForm() {
             />
           </div>
           <div>
-            <label htmlFor="phone" className="mb-1 block text-sm font-medium">
-              Teléfono (opcional)
+            <label htmlFor="phoneCountry" className="mb-1 block text-sm font-medium">
+              País del teléfono
             </label>
-            <input
-              id="phone"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full border border-base-gray-300 p-3 text-sm"
-            />
+            <div className="flex gap-2">
+              <select
+                id="phoneCountry"
+                value={phoneCountry}
+                onChange={(e) => setPhoneCountry(e.target.value as CountryCode)}
+                className="min-w-0 flex-1 border border-base-gray-300 p-3 text-sm"
+              >
+                {phoneCountries.map(({ country, name, callingCode }) => (
+                  <option key={country} value={country}>
+                    {countryNamesReady || country === "CL" ? name : country} (+{callingCode})
+                  </option>
+                ))}
+              </select>
+              <label htmlFor="phone" className="sr-only">
+                Número de teléfono
+              </label>
+              <input
+                id="phone"
+                type="tel"
+                required
+                autoComplete="tel-national"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Número de teléfono"
+                className="min-w-0 flex-1 border border-base-gray-300 p-3 text-sm"
+              />
+            </div>
           </div>
         </div>
 
@@ -448,7 +500,7 @@ export default function CheckoutForm() {
           </div>
           <button
             type="submit"
-            disabled={loading || items.length === 0}
+            disabled={loading || items.length === 0 || !retracto || !dataConsent}
             className="bg-base-black px-6 py-3 text-sm font-semibold text-base-white disabled:opacity-50"
           >
             {loading ? "Redirigiendo a Webpay…" : "Pagar con Webpay"}

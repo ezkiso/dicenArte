@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { fileTypeFromBuffer } from "file-type";
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 
 // RNF-06: límite estricto de tamaño en rutas API que reciben archivos.
 export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -82,7 +83,15 @@ export const checkoutSchema = z.object({
   customerLastName: z.string().min(2, "Ingresa tu apellido"),
   // El .email() de Zod ya exige un "@" y un dominio con punto (ej. algo.cl).
   customerEmail: z.string().email("Correo inválido"),
-  customerPhone: z.string().min(8).max(20).optional(),
+  customerPhone: z
+    .string()
+    .trim()
+    .min(1, "Ingresa tu número de teléfono.")
+    .max(30, "El número de teléfono es demasiado largo.")
+    .refine(
+      (phone) => parsePhoneNumberFromString(phone)?.isValid() ?? false,
+      "Ingresa un número de teléfono válido con su código de país."
+    ),
   deliveryMethod: z.enum(["DELIVERY", "PICKUP"]),
   shippingPlaceId: z.string().min(1).max(512).optional(),
   retractoAceptado: z.literal(true, {
