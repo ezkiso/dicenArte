@@ -27,3 +27,10 @@ export const checkoutRateLimit = new Ratelimit({
     limiter: Ratelimit.slidingWindow(10, "10 m"),
     prefix: "ratelimit:checkout",
 });
+
+// Limita verificaciones de direcciones para proteger la cuota de Geocoding API.
+export const shippingQuoteRateLimit = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(30, "10 m"),
+    prefix: "ratelimit:shipping-quote",
+});

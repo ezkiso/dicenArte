@@ -36,10 +36,18 @@ export async function generateMetadata({
   return {
     title: data.product.name,
     description: data.product.description.slice(0, 160),
+    alternates: { canonical: `/tienda/${params.slug}` },
+    robots: { index: true, follow: true },
     openGraph: {
       title: data.product.name,
       description: data.product.description.slice(0, 160),
-      images: data.images[0] ? [{ url: data.images[0] }] : undefined,
+      images: [{ url: "/og-image.jpeg", width: 1200, height: 630, alt: "DicenArte" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: data.product.name,
+      description: data.product.description.slice(0, 160),
+      images: ["/og-image.jpeg"],
     },
   };
 }

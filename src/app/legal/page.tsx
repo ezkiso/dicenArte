@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Términos, garantía y política de privacidad",
+  alternates: { canonical: "/legal" },
+  robots: { index: true, follow: true },
 };
 
 // RF-08: garantía legal y T&C visibles en una página propia (y enlazados

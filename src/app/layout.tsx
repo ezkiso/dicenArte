@@ -37,19 +37,16 @@ export const metadata: Metadata = {
   },
   description: brandDescription,
   keywords: seoKeywords,
-  applicationName: "Dicen Arte",
-  authors: [{ name: "Dicen Arte" }],
-  creator: "Dicen Arte",
-  publisher: "Dicen Arte",
-  alternates: {
-    canonical: "/",
-  },
+  applicationName: "DicenArte",
+  authors: [{ name: "DicenArte" }],
+  creator: "DicenArte",
+  publisher: "DicenArte",
   openGraph: {
     title: brandTitle,
     description: brandDescription,
     url: siteUrl,
-    siteName: "Dicen Arte",
-    images: [{ url: "/og-image.jpeg", width: 1200, height: 630, alt: "Dicen Arte" }],
+    siteName: "DicenArte",
+    images: [{ url: "/og-image.jpeg", width: 1200, height: 630, alt: "DicenArte" }],
     locale: "es_CL",
     type: "website",
   },
@@ -59,8 +56,10 @@ export const metadata: Metadata = {
     description: brandDescription,
     images: ["/og-image.jpeg"],
   },
-  robots: { index: true, follow: true },
+  robots: { index: false, follow: true },
 };
+
+export const dynamic = "force-dynamic";
 
 export const viewport: Viewport = {
   width: "device-width",

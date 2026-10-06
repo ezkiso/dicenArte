@@ -24,6 +24,7 @@ export default function CheckoutForm() {
   const [deliveryMethod, setDeliveryMethod] = useState<"DELIVERY" | "PICKUP">("DELIVERY");
   const [address, setAddress] = useState("");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [shippingPlaceId, setShippingPlaceId] = useState<string | null>(null);
   const [addressVerified, setAddressVerified] = useState(false);
   const [shippingQuote, setShippingQuote] = useState<ShippingQuote | null>(null);
   const [shippingLoading, setShippingLoading] = useState(false);
@@ -39,7 +40,7 @@ export default function CheckoutForm() {
   const markerRef = useRef<google.maps.Marker | null>(null);
   const geocoderRef = useRef<google.maps.Geocoder | null>(null);
 
-  async function fetchShippingQuote(lat: number, lng: number) {
+  async function fetchShippingQuote(placeId: string) {
     setShippingLoading(true);
     setShippingQuote(null);
 
@@ -47,7 +48,7 @@ export default function CheckoutForm() {
       const response = await fetch("/api/shipping/quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lat, lng }),
+        body: JSON.stringify({ placeId }),
       });
       const data = await response.json().catch(() => ({}));
 
@@ -100,10 +101,18 @@ export default function CheckoutForm() {
 
       geocoderRef.current?.geocode({ location: { lat, lng } }, (results, status) => {
         if (status === "OK" && results && results[0]) {
+          const placeId = results[0].place_id;
+          if (!placeId) {
+            setAddressVerified(false);
+            setError("No pudimos verificar esa dirección. Prueba con otro punto del mapa.");
+            return;
+          }
+
           setAddress(results[0].formatted_address);
           setCoords({ lat, lng });
+          setShippingPlaceId(placeId);
           setAddressVerified(true);
-          void fetchShippingQuote(lat, lng);
+          void fetchShippingQuote(placeId);
         } else {
           setAddressVerified(false);
           setError("No pudimos reconocer una dirección en ese punto del mapa.");
@@ -113,7 +122,7 @@ export default function CheckoutForm() {
 
     const autocomplete = new google.maps.places.Autocomplete(addressInputRef.current, {
       componentRestrictions: { country: "cl" },
-      fields: ["formatted_address", "geometry"],
+      fields: ["formatted_address", "geometry", "place_id"],
     });
 
     autocomplete.addListener("place_changed", () => {
@@ -126,12 +135,19 @@ export default function CheckoutForm() {
 
       const lat = place.geometry.location.lat();
       const lng = place.geometry.location.lng();
+      const placeId = place.place_id;
+      if (!placeId) {
+        setAddressVerified(false);
+        setError("No pudimos verificar esa dirección. Selecciona otra sugerencia.");
+        return;
+      }
 
       setAddress(place.formatted_address ?? "");
       setCoords({ lat, lng });
+      setShippingPlaceId(placeId);
       setAddressVerified(true);
       setError(null);
-      void fetchShippingQuote(lat, lng);
+      void fetchShippingQuote(placeId);
 
       map.setCenter({ lat, lng });
       map.setZoom(16);
@@ -144,6 +160,7 @@ export default function CheckoutForm() {
   // no queremos aceptar texto libre sin confirmar como dirección real.
   function handleAddressInputChange(value: string) {
     setAddress(value);
+    setShippingPlaceId(null);
     setAddressVerified(false);
     setShippingQuote(null);
   }
@@ -154,6 +171,7 @@ export default function CheckoutForm() {
     if (method === "PICKUP") {
       setAddress("");
       setCoords(null);
+      setShippingPlaceId(null);
       setAddressVerified(false);
       setShippingQuote({ distanceKm: 0, costClp: 0 });
     } else {
@@ -170,7 +188,7 @@ export default function CheckoutForm() {
       return;
     }
 
-    if (deliveryMethod === "DELIVERY" && (!addressVerified || !coords)) {
+    if (deliveryMethod === "DELIVERY" && (!addressVerified || !coords || !shippingPlaceId)) {
       setError(
         "Selecciona tu dirección desde las sugerencias mientras escribes, o arrastra el marcador en el mapa. No podemos aceptar una dirección sin confirmar."
       );
@@ -193,9 +211,7 @@ export default function CheckoutForm() {
           customerEmail: email,
           customerPhone: phone || undefined,
           deliveryMethod,
-          shippingAddress: address,
-          shippingLat: coords?.lat ?? null,
-          shippingLng: coords?.lng ?? null,
+          shippingPlaceId: deliveryMethod === "DELIVERY" ? shippingPlaceId : undefined,
           retractoAceptado: retracto,
           dataConsent,
           items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),

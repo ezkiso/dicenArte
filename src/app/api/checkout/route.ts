@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkoutSchema } from "@/lib/validations";
 import { CURRENT_POLICY_VERSION } from "@/lib/utils";
-import { calculateShippingQuote } from "@/lib/shipping";
+import { calculateShippingQuote, resolveShippingPlace } from "@/lib/shipping";
 
 // RF-06/07: crea la orden a partir de los ítems del carrito.
 // Ya no exige sesión iniciada: admite compra como invitado. Si por algún
@@ -68,11 +68,23 @@ export async function POST(req: NextRequest) {
   }[];
 
   let shippingQuote: { distanceKm: number; costClp: number };
+  let shippingAddress = "Retiro en tienda";
+  let shippingLat: number | null = null;
+  let shippingLng: number | null = null;
   if (parsed.data.deliveryMethod === "PICKUP") {
     shippingQuote = { distanceKm: 0, costClp: 0 };
   } else {
+    const placeId = parsed.data.shippingPlaceId;
+    if (!placeId) {
+      return NextResponse.json({ error: "Confirma la dirección en el mapa." }, { status: 400 });
+    }
+
     try {
-      shippingQuote = calculateShippingQuote(parsed.data.shippingLat!, parsed.data.shippingLng!);
+      const place = await resolveShippingPlace(placeId);
+      shippingQuote = calculateShippingQuote(place.latitude, place.longitude);
+      shippingAddress = place.address;
+      shippingLat = place.latitude;
+      shippingLng = place.longitude;
     } catch (err) {
       return NextResponse.json(
         { error: err instanceof Error ? err.message : "No se pudo calcular el despacho." },
@@ -93,12 +105,9 @@ export async function POST(req: NextRequest) {
         totalClp: total + shippingQuote.costClp,
         shippingCostClp: shippingQuote.costClp,
         shippingDistanceKm: shippingQuote.distanceKm,
-        shippingAddress:
-          parsed.data.deliveryMethod === "PICKUP"
-            ? "Retiro en tienda"
-            : parsed.data.shippingAddress!,
-        shippingLat: parsed.data.deliveryMethod === "PICKUP" ? null : parsed.data.shippingLat,
-        shippingLng: parsed.data.deliveryMethod === "PICKUP" ? null : parsed.data.shippingLng,
+        shippingAddress,
+        shippingLat,
+        shippingLng,
         retractoAceptado: parsed.data.retractoAceptado,
         items: { create: validOrderItems },
         statusLogs: { create: { status: "PENDIENTE", note: "Orden creada" } },

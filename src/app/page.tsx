@@ -7,6 +7,8 @@ import { getSignedImageUrl } from "@/lib/s3";
 
 export const metadata: Metadata = {
   title: { absolute: "DicenArte" },
+  alternates: { canonical: "/" },
+  robots: { index: true, follow: true },
   description:
     "Cuadros de mascotas personalizados y servicios para mascotas en Chile: Cat-Sister, hospedaje de mascotas y paseo de mascotas.",
   keywords: [

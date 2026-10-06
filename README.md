@@ -59,6 +59,7 @@ Ver `.env.example` para el detalle completo. Resumen de las más importantes:
 | `SII_PROVIDER_*` | Credenciales del proveedor de boletas electrónicas |
 | `WAREHOUSE_LAT` / `WAREHOUSE_LNG` | Coordenadas de la bodega para calcular el despacho |
 | `SHIPPING_MAX_DISTANCE_KM` | Distancia máxima de despacho; por defecto `25` |
+| `GOOGLE_MAPS_SERVER_API_KEY` | Clave secreta del servidor para verificar el Place ID y calcular el despacho; debe tener habilitada Geocoding API |
 
 ## 4. Probar un pago de prueba (sandbox Webpay)
 

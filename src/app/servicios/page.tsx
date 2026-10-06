@@ -27,6 +27,8 @@ const services = [
 
 export const metadata: Metadata = {
   title: "Servicios para mascotas",
+  alternates: { canonical: "/servicios" },
+  robots: { index: true, follow: true },
   description:
     "Conoce Cat-Sister, hospedaje de mascotas y paseo de mascotas. Consulta disponibilidad y precios por WhatsApp.",
   keywords: [
@@ -38,12 +40,12 @@ export const metadata: Metadata = {
     "Dicen Arte",
   ],
   openGraph: {
-    title: "Dicen Arte | Arte Personalizado y servicios para mascotas",
+    title: "Servicios para mascotas | DicenArte",
     description:
       "Servicios para mascotas: Cat-Sister, hospedaje de mascotas y paseo de mascotas. Atención en Providencia, Ñuñoa, Santiago Centro, Macul y La Florida.",
   },
   twitter: {
-    title: "Dicen Arte | Arte Personalizado y servicios para mascotas",
+    title: "Servicios para mascotas | DicenArte",
     description:
       "Servicios para mascotas: Cat-Sister, hospedaje de mascotas y paseo de mascotas.",
   },

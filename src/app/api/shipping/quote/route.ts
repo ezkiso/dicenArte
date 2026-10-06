@@ -1,22 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { calculateShippingQuote } from "@/lib/shipping";
+import { calculateShippingQuote, resolveShippingPlace } from "@/lib/shipping";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
-  const latitude = body?.lat;
-  const longitude = body?.lng;
+  const placeId = body?.placeId;
 
-  if (
-    typeof latitude !== "number" ||
-    !Number.isFinite(latitude) ||
-    typeof longitude !== "number" ||
-    !Number.isFinite(longitude)
-  ) {
-    return NextResponse.json({ error: "Coordenadas inválidas." }, { status: 400 });
+  if (typeof placeId !== "string" || placeId.length < 1 || placeId.length > 512) {
+    return NextResponse.json({ error: "Selecciona una dirección válida." }, { status: 400 });
   }
 
   try {
-    return NextResponse.json(calculateShippingQuote(latitude, longitude));
+    const place = await resolveShippingPlace(placeId);
+    return NextResponse.json(calculateShippingQuote(place.latitude, place.longitude));
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "No se pudo calcular el despacho." },

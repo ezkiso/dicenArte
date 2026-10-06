@@ -5,6 +5,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Tienda | Arte personalizado para mascotas",
+  alternates: { canonical: "/tienda" },
+  robots: { index: true, follow: true },
   description:
     "Descubre cuadros de mascotas personalizados y arte hecho a pedido en Dicen Arte.",
   keywords: [
@@ -16,12 +18,12 @@ export const metadata: Metadata = {
     "Dicen Arte",
   ],
   openGraph: {
-    title: "Dicen Arte | Arte Personalizado y servicios para mascotas",
+    title: "Tienda | Arte personalizado para mascotas | DicenArte",
     description:
       "Descubre cuadros de mascotas personalizados y arte hecho a pedido en Dicen Arte.",
   },
   twitter: {
-    title: "Dicen Arte | Arte Personalizado y servicios para mascotas",
+    title: "Tienda | Arte personalizado para mascotas | DicenArte",
     description:
       "Descubre cuadros de mascotas personalizados y arte hecho a pedido en Dicen Arte.",
   },

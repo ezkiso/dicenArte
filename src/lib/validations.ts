@@ -84,11 +84,7 @@ export const checkoutSchema = z.object({
   customerEmail: z.string().email("Correo inválido"),
   customerPhone: z.string().min(8).max(20).optional(),
   deliveryMethod: z.enum(["DELIVERY", "PICKUP"]),
-  shippingAddress: z.string().optional(),
-  // Solo se aceptan si vienen de una selección real en el mapa/autocompletar,
-  // nunca de texto libre sin confirmar (ver CheckoutForm.tsx).
-  shippingLat: z.number().nullable().optional(),
-  shippingLng: z.number().nullable().optional(),
+  shippingPlaceId: z.string().min(1).max(512).optional(),
   retractoAceptado: z.literal(true, {
     errorMap: () => ({ message: "Debes aceptar la política de derecho a retracto." }),
   }),
@@ -97,17 +93,10 @@ export const checkoutSchema = z.object({
   }),
 }).superRefine((data, context) => {
   if (data.deliveryMethod === "DELIVERY") {
-    if (!data.shippingAddress || data.shippingAddress.length < 10) {
+    if (!data.shippingPlaceId) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["shippingAddress"],
-        message: "Ingresa una dirección de despacho completa",
-      });
-    }
-    if (typeof data.shippingLat !== "number" || typeof data.shippingLng !== "number") {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["shippingLat"],
+        path: ["shippingPlaceId"],
         message: "Confirma la dirección en el mapa",
       });
     }
