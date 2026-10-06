@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { productSchema } from "@/lib/validations";
@@ -69,6 +70,27 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  await prisma.product.delete({ where: { id: params.id } });
-  return NextResponse.json({ ok: true });
+  try {
+    await prisma.product.delete({ where: { id: params.id } });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2003") {
+        return NextResponse.json(
+          {
+            error:
+              "No se puede eliminar porque este producto está asociado a pedidos. Puedes editarlo y dejar el stock en 0 para retirarlo de la tienda sin borrar su historial.",
+          },
+          { status: 409 }
+        );
+      }
+
+      if (error.code === "P2025") {
+        return NextResponse.json({ error: "El producto ya no existe." }, { status: 404 });
+      }
+    }
+
+    console.error("No se pudo eliminar el producto.", error);
+    return NextResponse.json({ error: "No se pudo eliminar el producto." }, { status: 500 });
+  }
 }
