@@ -53,8 +53,8 @@ export default async function HomePage() {
     <div>
       <section className="border-b border-base-gray-200 bg-base-white">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
-          <h1 className="font-display text-4xl leading-tight text-base-black sm:text-5xl">
-            Quiénes somos
+          <h1 className="text-center font-display text-4xl leading-tight text-base-black sm:text-5xl">
+            ¿Quiénes somos?
           </h1>
           <div className="mt-6 max-w-3xl space-y-4 text-base leading-7 text-base-gray-700">
             <p>
