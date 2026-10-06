@@ -6,6 +6,14 @@ import Providers from "@/components/Providers";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { Analytics } from "@vercel/analytics/next"
+import localFont from "next/font/local";
+
+const googleSansFlex = localFont({
+  src: "../../public/fonts/google-sans-flex-latin.woff2",
+  variable: "--font-google-sans",
+  display: "swap",
+  weight: "100 1000",
+});
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dicenarte.cl";
 
@@ -61,7 +69,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es-CL">
-      <body className="flex min-h-screen flex-col">
+      <body className={`${googleSansFlex.variable} flex min-h-screen flex-col`}>
         <Providers>
           <Header />
           <main className="flex-1">{children}</main>

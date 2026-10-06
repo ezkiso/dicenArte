@@ -1,5 +1,8 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import WhatsAppIcon from "@/components/WhatsAppIcon";
+
+const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "56987470959";
 
 // lucide-react ya no incluye logos de marcas (Instagram/Facebook), así que
 // se definen como SVG propios, minimalistas, en línea con la paleta blanco/
@@ -61,6 +64,15 @@ export default function Footer() {
               className="text-base-gray-300 hover:text-base-white"
             >
               <FacebookIcon width={20} height={20} />
+            </a>
+            <a
+              href={`https://wa.me/${phone}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="WhatsApp"
+              className="text-base-gray-300 hover:text-base-white"
+            >
+              <WhatsAppIcon width={20} height={20} />
             </a>
           </div>
         </div>

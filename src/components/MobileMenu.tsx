@@ -2,45 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-
-export interface CategoryNode {
-  id: string;
-  name: string;
-  slug: string;
-  children: CategoryNode[];
-}
-
-function renderMenuNode(node: CategoryNode, depth = 0, onNavigate: () => void) {
-  const isRoot = depth === 0;
-
-  return (
-    <li key={node.id} className={depth > 0 ? "ml-3 pl-3" : ""}>
-      <Link
-        href={`/tienda?categoria=${node.slug}`}
-        className={
-          isRoot
-            ? "block px-4 py-3 font-display text-2xl text-base-black"
-            : "block px-4 py-2 text-sm font-medium text-base-gray-700"
-        }
-        onClick={onNavigate}
-      >
-        {node.name}
-      </Link>
-
-      {node.children.length > 0 && (
-        <ul className={isRoot ? "mt-2 space-y-1" : "mt-1 space-y-1"}>
-          {node.children.map((child) => renderMenuNode(child, depth + 1, onNavigate))}
-        </ul>
-      )}
-    </li>
-  );
-}
+import { ChevronDown } from "lucide-react";
+import CategoryTreeMenu, { type CategoryNode } from "@/components/CategoryTreeMenu";
 
 export default function MobileMenu({ categories }: { categories: CategoryNode[] }) {
   const [open, setOpen] = useState(false);
-  const [mascotasOpen, setMascotasOpen] = useState(false);
+  const [catalogoOpen, setCatalogoOpen] = useState(false);
 
-  // Separar categoría "Mascotas" del resto
+  // Separar la categoría de mascotas del resto del catálogo.
   const mascotasCategory = categories.find(cat => cat.slug === "mascotas");
   const otherCategories = categories.filter(cat => cat.slug !== "mascotas");
 
@@ -76,25 +45,40 @@ export default function MobileMenu({ categories }: { categories: CategoryNode[] 
                 Ver toda la tienda
               </Link>
             </li>
-            {otherCategories.map((root) => renderMenuNode(root, 0, () => setOpen(false)))}
+            <li className="px-4">
+              <CategoryTreeMenu
+                categories={otherCategories}
+                mobile
+                onNavigate={() => setOpen(false)}
+              />
+            </li>
             {mascotasCategory && (
               <li>
                 <button
-                  onClick={() => setMascotasOpen(!mascotasOpen)}
+                  type="button"
+                  aria-expanded={catalogoOpen}
+                  onClick={() => setCatalogoOpen(!catalogoOpen)}
                   className="flex w-full items-center justify-between px-4 py-3 font-medium"
                 >
-                  {mascotasCategory.name}
-                  <span className={`transform transition-transform ${mascotasOpen ? "rotate-180" : ""}`}>
-                    ▼
-                  </span>
+                  Catálogo
+                  <ChevronDown size={16} aria-hidden="true" className={`transition-transform ${catalogoOpen ? "rotate-180" : ""}`} />
                 </button>
-                {mascotasOpen && (
-                  <ul className="divide-y divide-base-gray-200">
-                    {mascotasCategory.children.map((child) => renderMenuNode(child, 1, () => setOpen(false)))}
-                  </ul>
+                {catalogoOpen && (
+                  <div className="border-t border-base-gray-200 bg-base-gray-50 px-4">
+                    <CategoryTreeMenu
+                      categories={mascotasCategory.children}
+                      mobile
+                      onNavigate={() => setOpen(false)}
+                    />
+                  </div>
                 )}
               </li>
             )}
+            <li>
+              <Link href="/servicios" className="block px-4 py-3" onClick={() => setOpen(false)}>
+                Servicios
+              </Link>
+            </li>
             <li>
               <a href="#footer" className="block px-4 py-3" onClick={() => setOpen(false)}>
                 Contacto

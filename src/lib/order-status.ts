@@ -1,6 +1,7 @@
 import type { OrderStatus } from "@prisma/client";
 
 export const ADMIN_ORDER_STATUS_OPTIONS = [
+  "PAGADA",
   "EN_PREPARACION",
   "ENVIADA",
   "ENTREGADA",
@@ -10,6 +11,12 @@ const NEXT_ADMIN_ORDER_STATUS: Partial<Record<OrderStatus, OrderStatus>> = {
   PAGADA: "EN_PREPARACION",
   EN_PREPARACION: "ENVIADA",
   ENVIADA: "ENTREGADA",
+};
+
+const PREVIOUS_ADMIN_ORDER_STATUS: Partial<Record<OrderStatus, OrderStatus>> = {
+  EN_PREPARACION: "PAGADA",
+  ENVIADA: "EN_PREPARACION",
+  ENTREGADA: "ENVIADA",
 };
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
@@ -24,4 +31,8 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
 
 export function getNextAdminOrderStatus(status: OrderStatus) {
   return NEXT_ADMIN_ORDER_STATUS[status] ?? null;
+}
+
+export function getPreviousAdminOrderStatus(status: OrderStatus) {
+  return PREVIOUS_ADMIN_ORDER_STATUS[status] ?? null;
 }

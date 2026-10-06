@@ -33,6 +33,9 @@ async function main() {
     "mascotas",
     "cojines-de-mascotas",
     "bolsos-de-mascotas",
+    "pintura-acrilica",
+    "impresion-canva",
+    "dibujo-por-cambiar",
   ]);
 
   await prisma.category.deleteMany({
@@ -52,19 +55,49 @@ async function main() {
 
   const cojines = await prisma.category.upsert({
     where: { slug: "cojines-de-mascotas" },
-    update: { name: "Cojines de mascotas", parentId: mascotas.id },
+    update: { name: "Cuadro de mascota a pedido", parentId: mascotas.id },
     create: {
-      name: "Cojines de mascotas",
+      name: "Cuadro de mascota a pedido",
       slug: "cojines-de-mascotas",
       parentId: mascotas.id,
     },
   });
 
+  await prisma.category.upsert({
+    where: { slug: "pintura-acrilica" },
+    update: { name: "Pintura Acrílica", parentId: cojines.id },
+    create: {
+      name: "Pintura Acrílica",
+      slug: "pintura-acrilica",
+      parentId: cojines.id,
+    },
+  });
+
+  await prisma.category.upsert({
+    where: { slug: "impresion-canva" },
+    update: { name: "Impresión Canva", parentId: cojines.id },
+    create: {
+      name: "Impresión Canva",
+      slug: "impresion-canva",
+      parentId: cojines.id,
+    },
+  });
+
+  await prisma.category.upsert({
+    where: { slug: "dibujo-por-cambiar" },
+    update: { name: "Dibujo (por cambiar)", parentId: cojines.id },
+    create: {
+      name: "Dibujo (por cambiar)",
+      slug: "dibujo-por-cambiar",
+      parentId: cojines.id,
+    },
+  });
+
   const bolsos = await prisma.category.upsert({
     where: { slug: "bolsos-de-mascotas" },
-    update: { name: "Bolsos de mascotas", parentId: mascotas.id },
+    update: { name: "Artículos varios", parentId: mascotas.id },
     create: {
-      name: "Bolsos de mascotas",
+      name: "Artículos varios",
       slug: "bolsos-de-mascotas",
       parentId: mascotas.id,
     },

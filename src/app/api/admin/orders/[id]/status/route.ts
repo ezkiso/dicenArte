@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import {
   ADMIN_ORDER_STATUS_OPTIONS,
   getNextAdminOrderStatus,
+  getPreviousAdminOrderStatus,
 } from "@/lib/order-status";
 
 const updateStatusSchema = z
@@ -47,8 +48,15 @@ export async function PATCH(
 
     if (!order) return { kind: "not-found" as const };
 
-    if (getNextAdminOrderStatus(order.status) !== parsed.data.status) {
+    const isAdvance = getNextAdminOrderStatus(order.status) === parsed.data.status;
+    const isRollback = getPreviousAdminOrderStatus(order.status) === parsed.data.status;
+
+    if (!isAdvance && !isRollback) {
       return { kind: "invalid-transition" as const, currentStatus: order.status };
+    }
+
+    if (isRollback && !parsed.data.note) {
+      return { kind: "missing-rollback-note" as const };
     }
 
     const updated = await tx.order.updateMany({
@@ -60,7 +68,9 @@ export async function PATCH(
 
     const actor = session.user.email ?? session.user.id ?? "administrador";
     const note = [
-      `Actualizado desde el panel por ${actor}`,
+      isRollback
+        ? `Retroceso desde el panel por ${actor}`
+        : `Avance desde el panel por ${actor}`,
       parsed.data.note,
     ]
       .filter(Boolean)
@@ -84,10 +94,17 @@ export async function PATCH(
   if (result.kind === "invalid-transition") {
     return NextResponse.json(
       {
-        error: "El pedido solo puede avanzar un estado operativo a la vez y después de estar pagado.",
+        error: "El pedido solo puede avanzar o retroceder un estado operativo a la vez, sin modificar el estado de pago.",
         currentStatus: result.currentStatus,
       },
       { status: 409 }
+    );
+  }
+
+  if (result.kind === "missing-rollback-note") {
+    return NextResponse.json(
+      { error: "Indica el motivo para registrar el retroceso del pedido." },
+      { status: 400 }
     );
   }
 

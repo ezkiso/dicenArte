@@ -23,8 +23,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-body)", "sans-serif"],
-        display: ["var(--font-display)", "serif"],
+        sans: ["var(--font-google-sans)", "sans-serif"],
+        display: ["var(--font-google-sans)", "sans-serif"],
       },
     },
   },

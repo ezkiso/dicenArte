@@ -26,7 +26,7 @@ export default function FeaturedProductsCarousel({
 
         const timer = window.setInterval(() => {
         setActiveIndex((current) => (current + 1) % products.length);
-        }, 15000);
+        }, 3000);
 
         return () => window.clearInterval(timer);
     }, [products.length]);

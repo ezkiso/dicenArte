@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { OrderStatus } from "@prisma/client";
-import { getNextAdminOrderStatus, ORDER_STATUS_LABELS } from "@/lib/order-status";
+import {
+  getNextAdminOrderStatus,
+  getPreviousAdminOrderStatus,
+  ORDER_STATUS_LABELS,
+} from "@/lib/order-status";
 
 export default function AdminOrderStatusControl({
   orderId,
@@ -14,18 +18,22 @@ export default function AdminOrderStatusControl({
 }) {
   const router = useRouter();
   const nextStatus = getNextAdminOrderStatus(status);
+  const previousStatus = getPreviousAdminOrderStatus(status);
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function advanceStatus() {
-    if (!nextStatus) return;
+  async function updateStatus(targetStatus: OrderStatus, isRollback: boolean) {
+    if (isRollback && !note.trim()) {
+      setError("Indica el motivo para retroceder el estado del pedido.");
+      return;
+    }
 
     const currentLabel = ORDER_STATUS_LABELS[status];
-    const nextLabel = ORDER_STATUS_LABELS[nextStatus];
+    const targetLabel = ORDER_STATUS_LABELS[targetStatus];
     if (
       !window.confirm(
-        `¿Confirmas avanzar el pedido de "${currentLabel}" a "${nextLabel}"? Este cambio no se puede revertir desde el panel.`
+        `¿Confirmas ${isRollback ? "retroceder" : "avanzar"} el pedido de "${currentLabel}" a "${targetLabel}"?`
       )
     ) {
       return;
@@ -38,7 +46,7 @@ export default function AdminOrderStatusControl({
       const response = await fetch(`/api/admin/orders/${orderId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: nextStatus, note }),
+        body: JSON.stringify({ status: targetStatus, note }),
       });
       const data = await response.json().catch(() => null);
 
@@ -62,18 +70,65 @@ export default function AdminOrderStatusControl({
       {nextStatus ? (
         <>
           <p className="mb-3 text-sm text-base-gray-600">
-            Próximo paso: {ORDER_STATUS_LABELS[nextStatus]}. Los estados de pago se actualizan
-            automáticamente con la confirmación de Webpay.
+            Puedes avanzar a {ORDER_STATUS_LABELS[nextStatus]} o corregir un error retrocediendo
+            un estado operativo. Los estados de pago se actualizan automáticamente con la
+            confirmación de Webpay.
           </p>
           <label className="mb-3 block text-sm">
-            Nota interna (opcional)
+            Nota interna {previousStatus ? "(obligatoria para retroceder)" : "(opcional)"}
             <textarea
               value={note}
               onChange={(event) => setNote(event.target.value)}
               maxLength={500}
               rows={2}
               className="mt-1 w-full border border-base-gray-300 p-2"
-              placeholder="Por ejemplo: pedido preparado para despacho"
+              placeholder={previousStatus ? "Indica el motivo del cambio" : "Por ejemplo: pedido preparado para despacho"}
+            />
+          </label>
+          {error && (
+            <p role="alert" className="mb-3 text-sm text-red-700">
+              {error}
+            </p>
+          )}
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => updateStatus(nextStatus, false)}
+              disabled={loading}
+              className="bg-base-black px-4 py-2 text-sm font-semibold text-base-white disabled:opacity-50"
+            >
+              {loading ? "Actualizando…" : `Avanzar a ${ORDER_STATUS_LABELS[nextStatus]}`}
+            </button>
+            {previousStatus && (
+              <button
+                type="button"
+                onClick={() => updateStatus(previousStatus, true)}
+                disabled={loading}
+                className="border border-base-gray-400 px-4 py-2 text-sm font-semibold disabled:opacity-50"
+              >
+                {loading ? "Actualizando…" : `Retroceder a ${ORDER_STATUS_LABELS[previousStatus]}`}
+              </button>
+            )}
+          </div>
+          <p className="mt-3 text-xs text-base-gray-500">
+            Los cambios son secuenciales y quedan registrados en el historial. No modifican el
+            estado ni la información del pago.
+          </p>
+        </>
+      ) : previousStatus ? (
+        <>
+          <p className="mb-3 text-sm text-base-gray-600">
+            Puedes retroceder un estado operativo para corregir un error.
+          </p>
+          <label className="mb-3 block text-sm">
+            Motivo del retroceso (obligatorio)
+            <textarea
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              maxLength={500}
+              rows={2}
+              className="mt-1 w-full border border-base-gray-300 p-2"
+              placeholder="Indica el motivo del cambio"
             />
           </label>
           {error && (
@@ -83,14 +138,14 @@ export default function AdminOrderStatusControl({
           )}
           <button
             type="button"
-            onClick={advanceStatus}
+            onClick={() => updateStatus(previousStatus, true)}
             disabled={loading}
-            className="bg-base-black px-4 py-2 text-sm font-semibold text-base-white disabled:opacity-50"
+            className="border border-base-gray-400 px-4 py-2 text-sm font-semibold disabled:opacity-50"
           >
-            {loading ? "Actualizando…" : `Avanzar a ${ORDER_STATUS_LABELS[nextStatus]}`}
+            {loading ? "Actualizando…" : `Retroceder a ${ORDER_STATUS_LABELS[previousStatus]}`}
           </button>
           <p className="mt-3 text-xs text-base-gray-500">
-            El avance es secuencial y no se puede revertir desde el panel.
+            El cambio queda registrado en el historial y no modifica el estado ni la información del pago.
           </p>
         </>
       ) : (

@@ -52,7 +52,7 @@ export default async function TiendaPage({
     searchParams.categoria
       ? prisma.category.findUnique({
           where: { slug: searchParams.categoria },
-          select: { id: true, name: true },
+              select: { id: true, name: true, slug: true },
         })
       : Promise.resolve(null),
     prisma.product.findMany({
@@ -89,7 +89,7 @@ export default async function TiendaPage({
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <h1 className="mb-8 font-display text-3xl">
-        {category ? category.name : "Toda la tienda"}
+        {category?.slug === "mascotas" ? "Catálogo" : category?.name ?? "Toda la tienda"}
       </h1>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">

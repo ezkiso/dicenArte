@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { ShoppingCart } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useCartStore } from "@/lib/cartStore";
 import { formatClp } from "@/lib/utils";
@@ -38,7 +37,15 @@ export default function HeaderAuthLinks() {
           onClick={() => setPreviewOpen((open) => !open)}
           className="relative flex items-center"
         >
-          <ShoppingCart size={22} strokeWidth={1.5} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/icons/shopping-cart.png"
+            alt=""
+            aria-hidden="true"
+            width={24}
+            height={24}
+            className="h-6 w-6"
+          />
           {itemCount > 0 && (
             <span className="absolute -right-2 -top-2 inline-flex h-4 w-4 items-center justify-center rounded-full bg-base-black text-[10px] text-base-white">
               {itemCount}

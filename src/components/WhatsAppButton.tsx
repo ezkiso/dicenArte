@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle } from "lucide-react";
+import WhatsAppIcon from "@/components/WhatsAppIcon";
 
 // El número se define en .env como NEXT_PUBLIC_WHATSAPP_NUMBER, formato
 // internacional sin "+" ni espacios, ej: 56912345678
@@ -15,9 +15,9 @@ export default function WhatsAppButton() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Escríbenos por WhatsApp"
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-base-black text-base-white shadow-lg transition-transform hover:scale-105"
+        className="fixed bottom-6 left-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-base-black text-base-white shadow-lg transition-transform hover:scale-105"
         >
-        <MessageCircle size={28} strokeWidth={1.5} />
+        <WhatsAppIcon width={28} height={28} />
         </a>
     );
 }

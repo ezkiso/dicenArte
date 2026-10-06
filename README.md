@@ -139,7 +139,7 @@ dicenarte/
 
 ### Funcionalidad disponible
 
-- **Estados operativos de pedidos:** desde el detalle de un pedido pagado, una cuenta ADMIN puede avanzar secuencialmente `PAGADA` → `EN_PREPARACION` → `ENVIADA` → `ENTREGADA`. Cada avance queda en `OrderStatusLog` junto con el administrador y la nota opcional. El panel no modifica estados de pago, no permite retroceder ni anular pedidos.
+- **Estados operativos de pedidos:** desde el detalle de un pedido pagado, una cuenta ADMIN puede avanzar secuencialmente `PAGADA` → `EN_PREPARACION` → `ENVIADA` → `ENTREGADA` y retroceder de a un estado operativo para corregir errores. Cada cambio queda en `OrderStatusLog` junto con el administrador; los retrocesos requieren registrar el motivo. Retroceder no modifica ni revierte el pago confirmado. El panel no modifica estados de pago ni permite anular pedidos.
 - **Reposición de stock:** el flujo de confirmación de Webpay marca como rechazados los pagos fallidos y repone el stock reservado, protegido contra procesamiento duplicado (`src/app/api/webpay/commit/route.ts`).
 - **Historial de pedido:** el detalle administrativo muestra los registros de cambio de estado disponibles.
 
