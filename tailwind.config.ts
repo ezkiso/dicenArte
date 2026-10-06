@@ -9,11 +9,13 @@ const config: Config = {
         base: {
           white: "#FFFFFF",
           black: "#0A0A0A",
+          page: "#E0E0E0",
           gray: {
             50: "#FAFAFA",
             100: "#F2F2F2",
             200: "#E4E4E4",
             300: "#CFCFCF",
+            350: "#B3B3B3",
             400: "#9E9E9E",
             500: "#707070",
             600: "#4A4A4A",

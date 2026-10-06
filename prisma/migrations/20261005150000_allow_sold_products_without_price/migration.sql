@@ -1,0 +1,2 @@
+ALTER TABLE "Product"
+ALTER COLUMN "priceClp" DROP NOT NULL;

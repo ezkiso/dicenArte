@@ -70,9 +70,9 @@ export default async function ProductPage({ params }: { params: { slug: string }
               Sin imagen
             </div>
           )}
-          {product.stock <= 0 && (
+          {(product.stock <= 0 || product.priceClp === null) && (
             <span className="absolute left-3 top-3 bg-base-black px-2 py-1 text-xs font-semibold uppercase text-base-white">
-              Agotado
+              {product.stock <= 0 ? "Vendido" : "Precio por definir"}
             </span>
           )}
         </div>
@@ -82,7 +82,11 @@ export default async function ProductPage({ params }: { params: { slug: string }
             {product.category.name}
           </p>
           <h1 className="mt-1 font-display text-3xl">{product.name}</h1>
-          <p className="mt-4 text-2xl font-semibold">{formatClp(product.priceClp)}</p>
+          <p className="mt-4 text-2xl font-semibold">
+            {product.priceClp === null
+              ? product.stock <= 0 ? "Vendido" : "Precio por definir"
+              : formatClp(product.priceClp)}
+          </p>
           <p className="mt-6 whitespace-pre-line text-base-gray-700">{product.description}</p>
 
           {product.isCustom && (
@@ -98,7 +102,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                 productId: product.id,
                 name: product.name,
                 slug: product.slug,
-                priceClp: product.priceClp,
+                priceClp: product.priceClp ?? 0,
                 stock: product.stock,
                 imageUrl: images[0],
               }}

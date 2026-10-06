@@ -50,7 +50,7 @@ export default async function Header() {
   const otherCategories = categories.filter(cat => cat.slug !== "mascotas");
 
   return (
-    <header className="relative border-b border-base-gray-200 bg-base-white">
+    <header className="relative border-b border-base-gray-200 bg-base-page">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
         <Logo />
 

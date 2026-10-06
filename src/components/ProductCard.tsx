@@ -6,7 +6,7 @@ export interface ProductCardData {
   id: string;
   name: string;
   slug: string;
-  priceClp: number;
+  priceClp: number | null;
   stock: number;
   imageUrl?: string;
 }
@@ -14,6 +14,7 @@ export interface ProductCardData {
 // RF-05: productos con stock 0 muestran la etiqueta "Agotado" y no permiten compra.
 export default function ProductCard({ product }: { product: ProductCardData }) {
   const agotado = product.stock <= 0;
+  const vendido = agotado && product.priceClp === null;
 
   return (
     <Link
@@ -37,14 +38,16 @@ export default function ProductCard({ product }: { product: ProductCardData }) {
         )}
         {agotado && (
           <span className="absolute left-2 top-2 bg-base-black px-2 py-1 text-xs font-semibold uppercase tracking-wide text-base-white">
-            Agotado
+            {vendido ? "Vendido" : "Agotado"}
           </span>
         )}
       </div>
       <div className="p-3">
         <h3 className="text-sm text-base-black group-hover:underline">{product.name}</h3>
         <p className="mt-1 text-sm font-medium text-base-gray-600">
-          {formatClp(product.priceClp)}
+          {product.priceClp === null
+            ? agotado ? "Vendido" : "Precio por definir"
+            : formatClp(product.priceClp)}
         </p>
       </div>
     </Link>

@@ -1,8 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Beau_Rivage } from "next/font/google";
-
-const beauRivage = Beau_Rivage({ subsets: ["latin"], weight: "400" });
+import { beauRivage } from "@/lib/fonts";
 
 /**
  * RF-16: logo corporativo, usado en Header y Footer.
@@ -24,7 +22,7 @@ export default function Logo({ inverted = false }: { inverted?: boolean }) {
         width={60}
         height={60}
         priority
-        className="h-14 w-14 object-cover"
+        className="h-14 w-14 rounded-full object-cover"
       />
       DicenArte
     </Link>

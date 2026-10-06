@@ -8,7 +8,10 @@ import type { CartItem } from "@/lib/cartStore";
 export default function AddToCartButton({ product }: { product: Omit<CartItem, "quantity"> }) {
   const addItem = useCartStore((s) => s.addItem);
   const [added, setAdded] = useState(false);
-  const agotado = product.stock <= 0;
+  const agotado = product.stock <= 0 || product.priceClp === null;
+  const disabledLabel = product.priceClp === null
+    ? product.stock <= 0 ? "Vendido" : "Precio por definir"
+    : "Agotado";
 
   if (agotado) {
     return (
@@ -16,7 +19,7 @@ export default function AddToCartButton({ product }: { product: Omit<CartItem, "
         disabled
         className="w-full cursor-not-allowed border border-base-gray-300 bg-base-gray-100 px-6 py-3 text-sm font-semibold text-base-gray-400"
       >
-        Agotado
+        {disabledLabel}
       </button>
     );
   }

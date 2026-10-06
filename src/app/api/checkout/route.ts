@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
   const orderItemsData = [...quantities].map(([productId, quantity]) => {
     const item = { productId, quantity };
     const product = products.find((p) => p.id === item.productId);
-    if (!product) return null;
+    if (!product || product.priceClp === null || product.stock < quantity) return null;
     total += product.priceClp * item.quantity;
     return {
       productId: product.id,
@@ -55,7 +55,10 @@ export async function POST(req: NextRequest) {
   });
 
   if (orderItemsData.some((item) => item === null)) {
-    return NextResponse.json({ error: "Uno o más productos no existen." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Uno o más productos no existen, no tienen precio definido o no tienen stock suficiente." },
+      { status: 400 }
+    );
   }
 
   const validOrderItems = orderItemsData as {

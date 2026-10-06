@@ -20,7 +20,7 @@ export default function MobileMenu({ categories }: { categories: CategoryNode[] 
         aria-label={open ? "Cerrar menú" : "Abrir menú"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className={`flex h-10 w-10 flex-col items-center justify-center gap-1.5 border border-base-gray-300 bg-base-white ${
+        className={`flex h-10 w-10 flex-col items-center justify-center gap-1.5 border border-base-gray-300 bg-base-page ${
           open ? "fixed right-4 top-4 z-[60]" : "relative z-[60]"
         }`}
       >
@@ -38,7 +38,7 @@ export default function MobileMenu({ categories }: { categories: CategoryNode[] 
       </button>
 
       {open && (
-        <nav className="fixed inset-x-0 top-[85px] z-50 max-h-[70vh] overflow-y-auto border-t border-base-gray-200 bg-base-white shadow-lg">
+        <nav className="fixed inset-x-0 bottom-0 top-[85px] z-[55] overflow-y-auto border-t border-base-gray-200 bg-base-white shadow-lg">
           <ul className="divide-y divide-base-gray-200">
             <li>
               <Link href="/tienda" className="block px-4 py-3 font-medium" onClick={() => setOpen(false)}>

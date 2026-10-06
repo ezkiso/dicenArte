@@ -10,7 +10,8 @@ export interface FeaturedProduct {
     id: string;
     name: string;
     slug: string;
-    priceClp: number;
+    priceClp: number | null;
+    stock: number;
     imageUrl?: string;
 }
 
@@ -45,7 +46,7 @@ export default function FeaturedProductsCarousel({
 
     return (
         <div className="relative mx-auto w-full max-w-6xl">
-        <div className="overflow-hidden border border-base-gray-200 bg-base-gray-50">
+        <div className="overflow-hidden border border-base-gray-200 bg-base-page">
             <div
             className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
             style={{ transform: `translateX(-${activeIndex * 100}%)` }}
@@ -58,7 +59,7 @@ export default function FeaturedProductsCarousel({
                     className="group block focus-visible:outline-none"
                     tabIndex={index === activeIndex ? 0 : -1}
                 >
-                    <div className="relative aspect-[4/2] w-full bg-base-gray-100 sm:aspect-[16/4]">
+                    <div className="relative aspect-[4/2] w-full bg-base-gray-350 sm:aspect-[16/4]">
                     {product.imageUrl ? (
                         <Image
                         src={product.imageUrl}
@@ -75,12 +76,14 @@ export default function FeaturedProductsCarousel({
                         </div>
                     )}
                     </div>
-                    <div className="flex items-baseline justify-between gap-4 border-t border-base-gray-200 bg-base-white px-4 py-4 sm:px-6">
+                    <div className="flex items-baseline justify-between gap-4 border-t border-base-gray-200 bg-base-page px-4 py-4 sm:px-6">
                     <h3 className="font-display text-xl text-base-black group-hover:underline sm:text-2xl">
                         {product.name}
                     </h3>
                     <p className="shrink-0 text-sm font-semibold text-base-gray-600 sm:text-base">
-                        {formatClp(product.priceClp)}
+                        {product.priceClp === null
+                            ? product.stock <= 0 ? "Vendido" : "Precio por definir"
+                            : formatClp(product.priceClp)}
                     </p>
                     </div>
                 </Link>
@@ -95,7 +98,7 @@ export default function FeaturedProductsCarousel({
                 type="button"
                 onClick={showPrevious}
                 aria-label="Producto destacado anterior"
-                className="absolute left-3 top-[calc(50%-1.5rem)] flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-base-gray-300 bg-base-white/95 text-base-black shadow-sm transition-colors hover:bg-base-black hover:text-base-white"
+                className="absolute left-3 top-[calc(50%-1.5rem)] flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-base-gray-300 bg-base-page/95 text-base-black shadow-sm transition-colors hover:bg-base-black hover:text-base-white"
             >
                 <ChevronLeft size={20} aria-hidden="true" />
             </button>
@@ -103,7 +106,7 @@ export default function FeaturedProductsCarousel({
                 type="button"
                 onClick={showNext}
                 aria-label="Producto destacado siguiente"
-                className="absolute right-3 top-[calc(50%-1.5rem)] flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-base-gray-300 bg-base-white/95 text-base-black shadow-sm transition-colors hover:bg-base-black hover:text-base-white"
+                className="absolute right-3 top-[calc(50%-1.5rem)] flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-base-gray-300 bg-base-page/95 text-base-black shadow-sm transition-colors hover:bg-base-black hover:text-base-white"
             >
                 <ChevronRight size={20} aria-hidden="true" />
             </button>
@@ -118,7 +121,7 @@ export default function FeaturedProductsCarousel({
                     className={`h-2 w-2 rounded-full border transition-colors ${
                     index === activeIndex
                         ? "border-base-black bg-base-black"
-                        : "border-base-gray-400 bg-base-white hover:bg-base-gray-300"
+                        : "border-base-gray-400 bg-base-page hover:bg-base-gray-300"
                     }`}
                 />
                 ))}

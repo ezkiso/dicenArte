@@ -52,7 +52,8 @@ export const productSchema = z.object({
   priceClp: z
     .number({ required_error: "El precio es obligatorio." })
     .int("El precio debe ser un número entero.")
-    .positive("El precio debe ser mayor que 0."),
+    .positive("El precio debe ser mayor que 0.")
+    .nullable(),
   stock: z
     .number({ required_error: "El stock es obligatorio." })
     .int("El stock debe ser un número entero.")

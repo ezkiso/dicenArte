@@ -87,7 +87,7 @@ model Product {
   name        String
   slug        String       @unique
   description String       @db.Text
-  priceClp    Int
+  priceClp    Int?
   stock       Int          @default(0)
   isCustom    Boolean      @default(true)
   categoryId  String

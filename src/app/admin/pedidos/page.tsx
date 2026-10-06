@@ -14,7 +14,8 @@ export default async function AdminOrdersPage() {
   return (
     <div>
       <h1 className="mb-6 font-display text-2xl">Pedidos</h1>
-      <table className="w-full border-collapse text-sm">
+      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <table className="w-full min-w-[46rem] border-collapse text-sm">
         <thead>
           <tr className="border-b border-base-gray-300 text-left">
             <th className="py-2">Orden</th>
@@ -56,6 +57,7 @@ export default async function AdminOrdersPage() {
           ))}
         </tbody>
       </table>
+      </div>
 
       {orders.length === 0 && <p className="mt-6 text-base-gray-500">No hay pedidos aún.</p>}
     </div>

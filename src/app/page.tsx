@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import FeaturedProductsCarousel from "@/components/FeaturedProductsCarousel";
 import ProductCard from "@/components/ProductCard";
+import Image from "next/image";
 import { getSignedImageUrl } from "@/lib/s3";
 
 export const metadata: Metadata = {
@@ -51,12 +52,19 @@ export default async function HomePage() {
 
   return (
     <div>
-      <section className="border-b border-base-gray-200 bg-base-white">
+      <section className="border-b border-base-gray-200 bg-base-page">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
-          <h1 className="text-center font-display text-4xl leading-tight text-base-black sm:text-5xl">
-            ¿Quiénes somos?
+          <h1 className="flex justify-center">
+            <Image
+              src="/logo.jpeg"
+              alt="DicenArte, arte y diseño"
+              width={192}
+              height={192}
+              priority
+              className="h-36 w-36 rounded-full object-cover sm:h-48 sm:w-48"
+            />
           </h1>
-          <div className="mt-6 max-w-3xl space-y-4 text-base leading-7 text-base-gray-700">
+          <div className="mx-auto mt-6 max-w-3xl space-y-4 text-center text-base leading-7 text-base-gray-700">
             <p>
               Somos un equipo de artistas y amantes de los animales apasionados por celebrar la vida
               de tus mascotas. Nos dedicamos a inmortalizar a esos compañeros incondicionales a través
@@ -84,7 +92,7 @@ export default async function HomePage() {
         <FeaturedProductsCarousel products={productsWithUrls} />
       </section>
 
-      <section className="border-t border-base-gray-200 bg-base-gray-50">
+      <section className="border-t border-base-gray-200 bg-base-page">
         <div className="mx-auto max-w-6xl px-4 py-16">
           <h2 className="mb-8 font-display text-3xl text-base-black sm:text-4xl">
             Últimos productos publicados

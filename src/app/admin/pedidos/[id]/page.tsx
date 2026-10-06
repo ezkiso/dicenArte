@@ -22,7 +22,7 @@ export default async function AdminOrderDetailPage({
   if (!order) notFound();
 
   return (
-    <div>
+    <div className="min-w-0">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link href="/admin/pedidos" className="text-sm underline">
@@ -48,8 +48,8 @@ export default async function AdminOrderDetailPage({
         </span>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="border border-base-gray-200 p-4">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-2">
+        <section className="min-w-0 border border-base-gray-200 p-4">
           <h2 className="mb-3 font-display text-lg">Cliente</h2>
           <dl className="space-y-2 text-sm">
             <div>
@@ -58,7 +58,7 @@ export default async function AdminOrderDetailPage({
             </div>
             <div>
               <dt className="font-semibold">Correo</dt>
-              <dd>{order.customerEmail}</dd>
+              <dd className="break-all">{order.customerEmail}</dd>
             </div>
             {order.customerPhone && (
               <div>
@@ -69,9 +69,9 @@ export default async function AdminOrderDetailPage({
           </dl>
         </section>
 
-        <section className="border border-base-gray-200 p-4">
+        <section className="min-w-0 border border-base-gray-200 p-4">
           <h2 className="mb-3 font-display text-lg">Destino de despacho</h2>
-          <p className="text-sm">{order.shippingAddress}</p>
+          <p className="break-words text-sm">{order.shippingAddress}</p>
           {(order.shippingLat !== null || order.shippingLng !== null) && (
             <p className="mt-3 text-xs text-base-gray-500">
               Coordenadas: {order.shippingLat ?? "-"}, {order.shippingLng ?? "-"}
@@ -80,7 +80,7 @@ export default async function AdminOrderDetailPage({
         </section>
       </div>
 
-      <section className="mt-6 border border-base-gray-200 p-4">
+      <section className="mt-6 min-w-0 border border-base-gray-200 p-4">
         <h2 className="mb-3 font-display text-lg">Productos comprados</h2>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[30rem] border-collapse text-sm">
@@ -106,7 +106,7 @@ export default async function AdminOrderDetailPage({
             </tbody>
           </table>
         </div>
-        <div className="mt-4 flex justify-end border-t border-base-gray-200 pt-4">
+        <div className="mt-4 flex flex-wrap justify-end gap-x-4 gap-y-1 border-t border-base-gray-200 pt-4">
           <p className="text-sm">Despacho: {formatClp(order.shippingCostClp)}</p>
           <p className="text-sm">Distancia: {order.shippingDistanceKm.toFixed(2)} km</p>
           <p className="text-lg font-semibold">Total: {formatClp(order.totalClp)}</p>
@@ -115,8 +115,8 @@ export default async function AdminOrderDetailPage({
 
       <AdminOrderStatusControl orderId={order.id} status={order.status} />
 
-      <section className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="border border-base-gray-200 p-4">
+      <section className="mt-6 grid min-w-0 gap-6 lg:grid-cols-2">
+        <div className="min-w-0 border border-base-gray-200 p-4">
           <h2 className="mb-3 font-display text-lg">Pago</h2>
           {order.payment ? (
             <dl className="space-y-2 text-sm">
@@ -140,7 +140,7 @@ export default async function AdminOrderDetailPage({
           )}
         </div>
 
-        <div className="border border-base-gray-200 p-4">
+        <div className="min-w-0 border border-base-gray-200 p-4">
           <h2 className="mb-3 font-display text-lg">Historial</h2>
           <ul className="space-y-3 text-sm">
             {order.statusLogs.map((log) => (
