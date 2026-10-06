@@ -48,6 +48,6 @@ export const useCartStore = create<CartState>()(
       clear: () => set({ items: [] }),
       totalClp: () => get().items.reduce((sum, i) => sum + i.priceClp * i.quantity, 0),
     }),
-    { name: "dicenarte-cart" }
+    { name: "dicenarte-cart", skipHydration: true }
   )
 );
