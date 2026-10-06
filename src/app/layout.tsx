@@ -16,7 +16,7 @@ const googleSansFlex = localFont({
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dicenarte.cl";
-const brandTitle = "Dicen Arte | Arte Personalizado y servicios para mascotas";
+const brandTitle = "DicenArte";
 const brandDescription =
   "Cuadros de mascotas personalizados y servicios para mascotas: Cat-Sister, hospedaje de mascotas y paseo de mascotas.";
 const seoKeywords = [
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: brandTitle,
-    template: "%s | Dicen Arte",
+    template: "%s | DicenArte",
   },
   description: brandDescription,
   keywords: seoKeywords,

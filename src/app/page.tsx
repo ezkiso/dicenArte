@@ -6,7 +6,7 @@ import Image from "next/image";
 import { getSignedImageUrl } from "@/lib/s3";
 
 export const metadata: Metadata = {
-  title: { absolute: "Dicen Arte | Arte Personalizado y servicios para mascotas" },
+  title: { absolute: "DicenArte" },
   description:
     "Cuadros de mascotas personalizados y servicios para mascotas en Chile: Cat-Sister, hospedaje de mascotas y paseo de mascotas.",
   keywords: [
@@ -18,12 +18,12 @@ export const metadata: Metadata = {
     "paseo de mascotas",
   ],
   openGraph: {
-    title: "Dicen Arte | Arte Personalizado y servicios para mascotas",
+    title: "DicenArte",
     description:
       "Cuadros de mascotas personalizados y servicios para mascotas: Cat-Sister, hospedaje de mascotas y paseo de mascotas.",
   },
   twitter: {
-    title: "Dicen Arte | Arte Personalizado y servicios para mascotas",
+    title: "DicenArte",
     description:
       "Cuadros de mascotas personalizados y servicios para mascotas: Cat-Sister, hospedaje de mascotas y paseo de mascotas.",
   },
