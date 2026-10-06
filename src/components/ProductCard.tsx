@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import ImageZoom from "@/components/ImageZoom";
 import { formatClp } from "@/lib/utils";
 
 export interface ProductCardData {
@@ -17,20 +18,23 @@ export default function ProductCard({ product }: { product: ProductCardData }) {
   const vendido = agotado && product.priceClp === null;
 
   return (
-    <Link
-      href={`/tienda/${product.slug}`}
-      className="group block border border-base-gray-200 transition-colors hover:border-base-black"
-    >
+    <article className="group border border-base-gray-200 transition-colors hover:border-base-black">
       <div className="relative aspect-square w-full bg-base-gray-100">
         {product.imageUrl ? (
-          <Image
+          <ImageZoom
             src={product.imageUrl}
             alt={product.name}
-            fill
-            unoptimized
-            className="object-cover"
-            sizes="(max-width: 768px) 50vw, 25vw"
-          />
+            className="absolute inset-0 block h-full w-full cursor-zoom-in"
+          >
+            <Image
+              src={product.imageUrl}
+              alt={product.name}
+              fill
+              unoptimized
+              className="object-cover"
+              sizes="(max-width: 768px) 50vw, 25vw"
+            />
+          </ImageZoom>
         ) : (
           <div className="flex h-full items-center justify-center text-base-gray-400">
             Sin imagen
@@ -43,13 +47,15 @@ export default function ProductCard({ product }: { product: ProductCardData }) {
         )}
       </div>
       <div className="p-3">
-        <h3 className="text-sm text-base-black group-hover:underline">{product.name}</h3>
+        <Link href={`/tienda/${product.slug}`} className="text-sm text-base-black group-hover:underline">
+          {product.name}
+        </Link>
         <p className="mt-1 text-sm font-medium text-base-gray-600">
           {product.priceClp === null
             ? agotado ? "Vendido" : "Precio por definir"
             : formatClp(product.priceClp)}
         </p>
       </div>
-    </Link>
+    </article>
   );
 }

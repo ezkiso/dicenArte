@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
 import { Trash2 } from "lucide-react";
+import ImageZoom from "@/components/ImageZoom";
 
 export default function ProductImageUploader({
   productId,
@@ -69,14 +70,20 @@ export default function ProductImageUploader({
           .filter((img) => !!img.url)
           .map((img) => (
             <div key={img.id} className="relative aspect-square bg-base-gray-100">
-              <Image src={img.url!} alt="" fill className="object-cover" />
+              <ImageZoom
+                src={img.url!}
+                alt="Imagen del producto"
+                className="absolute inset-0 block h-full w-full cursor-zoom-in"
+              >
+                <Image src={img.url!} alt="Imagen del producto" fill className="object-cover" />
+              </ImageZoom>
               <button
                 type="button"
                 aria-label="Eliminar imagen"
                 title="Eliminar imagen"
                 onClick={() => handleDelete(img.id)}
                 disabled={deletingImageId !== null || loading}
-                className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center bg-base-black text-base-white shadow disabled:opacity-50"
+                className="absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center bg-base-black text-base-white shadow disabled:opacity-50"
               >
                 <Trash2 size={17} aria-hidden="true" />
               </button>

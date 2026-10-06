@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { getSignedImageUrl } from "@/lib/s3";
 import { formatClp } from "@/lib/utils";
 import AddToCartButton from "@/components/AddToCartButton";
+import ImageZoom from "@/components/ImageZoom";
 
 export const revalidate = 60;
 
@@ -56,15 +57,21 @@ export default async function ProductPage({ params }: { params: { slug: string }
       <div className="grid gap-10 md:grid-cols-2">
         <div className="relative aspect-square w-full bg-base-gray-100">
           {images[0] ? (
-            <Image
+            <ImageZoom
               src={images[0]}
               alt={product.name}
-              fill
-              priority
-              unoptimized
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover"
-            />
+              className="absolute inset-0 block h-full w-full cursor-zoom-in"
+            >
+              <Image
+                src={images[0]}
+                alt={product.name}
+                fill
+                priority
+                unoptimized
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
+              />
+            </ImageZoom>
           ) : (
             <div className="flex h-full items-center justify-center text-base-gray-400">
               Sin imagen

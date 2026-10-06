@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import ImageZoom from "@/components/ImageZoom";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { formatClp } from "@/lib/utils";
@@ -54,39 +55,43 @@ export default function FeaturedProductsCarousel({
             >
             {products.map((product, index) => (
                 <div key={product.id} className="min-w-full">
-                <Link
-                    href={`/tienda/${product.slug}`}
-                    className="group block focus-visible:outline-none"
-                    tabIndex={index === activeIndex ? 0 : -1}
-                >
                     <div className="relative aspect-[4/2] w-full bg-base-gray-350 sm:aspect-[16/4]">
-                    {product.imageUrl ? (
-                        <Image
-                        src={product.imageUrl}
-                        alt={product.name}
-                        fill
-                        priority={index === 0}
-                        unoptimized
-                        sizes="100vw"
-                        className="object-contain transition-transform duration-500 group-hover:scale-[1.02] motion-reduce:transition-none"
-                        />
-                    ) : (
-                        <div className="flex h-full items-center justify-center text-base-gray-400">
-                        Sin imagen
-                        </div>
-                    )}
+                        {product.imageUrl ? (
+                            <ImageZoom
+                                src={product.imageUrl}
+                                alt={product.name}
+                                className="absolute inset-0 block h-full w-full cursor-zoom-in"
+                            >
+                                <Image
+                                    src={product.imageUrl}
+                                    alt={product.name}
+                                    fill
+                                    priority={index === 0}
+                                    unoptimized
+                                    sizes="100vw"
+                                    className="object-contain transition-transform duration-500 hover:scale-[1.02] motion-reduce:transition-none"
+                                />
+                            </ImageZoom>
+                        ) : (
+                            <div className="flex h-full items-center justify-center text-base-gray-400">
+                                Sin imagen
+                            </div>
+                        )}
                     </div>
-                    <div className="flex items-baseline justify-between gap-4 border-t border-base-gray-200 bg-base-page px-4 py-4 sm:px-6">
-                    <h3 className="font-display text-xl text-base-black group-hover:underline sm:text-2xl">
-                        {product.name}
-                    </h3>
-                    <p className="shrink-0 text-sm font-semibold text-base-gray-600 sm:text-base">
-                        {product.priceClp === null
-                            ? product.stock <= 0 ? "Vendido" : "Precio por definir"
-                            : formatClp(product.priceClp)}
-                    </p>
-                    </div>
-                </Link>
+                    <Link
+                        href={`/tienda/${product.slug}`}
+                        className="group flex items-baseline justify-between gap-4 border-t border-base-gray-200 bg-base-page px-4 py-4 sm:px-6"
+                        tabIndex={index === activeIndex ? 0 : -1}
+                    >
+                        <h3 className="font-display text-xl text-base-black group-hover:underline sm:text-2xl">
+                            {product.name}
+                        </h3>
+                        <p className="shrink-0 text-sm font-semibold text-base-gray-600 sm:text-base">
+                            {product.priceClp === null
+                                ? product.stock <= 0 ? "Vendido" : "Precio por definir"
+                                : formatClp(product.priceClp)}
+                        </p>
+                    </Link>
                 </div>
             ))}
             </div>
