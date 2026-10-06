@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import FeaturedProductsCarousel from "@/components/FeaturedProductsCarousel";
 import ProductCard from "@/components/ProductCard";
 import { getSignedImageUrl } from "@/lib/s3";
-import { Pickaxe } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Cojines personalizados y bolsas de género",
@@ -53,12 +52,22 @@ export default async function HomePage() {
   return (
     <div>
       <section className="border-b border-base-gray-200 bg-base-white">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-6 px-4 py-20">
-          <div className="flex items-center gap-3">
-            <h1 className="font-display text-4xl leading-tight text-base-black sm:text-5xl">
-              En construcción
-            </h1>
-            <Pickaxe size={48} strokeWidth={1.5} />
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
+          <h1 className="font-display text-4xl leading-tight text-base-black sm:text-5xl">
+            Quiénes somos
+          </h1>
+          <div className="mt-6 max-w-3xl space-y-4 text-base leading-7 text-base-gray-700">
+            <p>
+              Somos un equipo de artistas y amantes de los animales apasionados por celebrar la vida
+              de tus mascotas. Nos dedicamos a inmortalizar a esos compañeros incondicionales a través
+              de productos personalizados únicos, llenos de arte y sentimiento.
+            </p>
+            <p>
+              Además, entendemos lo importante que es su bienestar cuando no estás en casa. Por eso,
+              ofrecemos servicios profesionales de visita, alimentación y compañía a domicilio,
+              cuidando a tus mascotas con la misma dedicación, cariño y responsabilidad como si fueran
+              nuestras.
+            </p>
           </div>
         </div>
       </section>
