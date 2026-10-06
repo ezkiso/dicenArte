@@ -14,8 +14,8 @@ export default async function AdminOrdersPage() {
   return (
     <div>
       <h1 className="mb-6 font-display text-2xl">Pedidos</h1>
-      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-      <table className="w-full min-w-[46rem] border-collapse text-sm">
+      <div className="hidden overflow-x-auto md:block">
+      <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="border-b border-base-gray-300 text-left">
             <th className="py-2">Orden</th>
@@ -57,6 +57,44 @@ export default async function AdminOrdersPage() {
           ))}
         </tbody>
       </table>
+      </div>
+
+      <div className="space-y-3 md:hidden">
+        {orders.map((order) => (
+          <article key={order.id} className="min-w-0 border border-base-gray-200 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <p className="font-mono text-xs">
+                Pedido #{order.id.slice(-8).toUpperCase()}
+              </p>
+              <span
+                className={
+                  order.status === "PAGADA"
+                    ? "text-base-black"
+                    : order.status === "RECHAZADA"
+                      ? "text-base-gray-500 line-through"
+                      : "text-base-gray-600"
+                }
+              >
+                {ORDER_STATUS_LABELS[order.status]}
+              </span>
+            </div>
+            <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+              <dt className="text-base-gray-500">Cliente</dt>
+              <dd className="break-all text-right">{order.customerEmail}</dd>
+              <dt className="text-base-gray-500">Total</dt>
+              <dd className="text-right">{formatClp(order.totalClp)}</dd>
+              <dt className="text-base-gray-500">Fecha</dt>
+              <dd className="text-right text-base-gray-500">
+                {order.createdAt.toLocaleDateString("es-CL")}
+              </dd>
+            </dl>
+            <div className="mt-4 border-t border-base-gray-200 pt-3 text-right">
+              <Link href={`/admin/pedidos/${order.id}`} className="text-sm underline">
+                Ver detalles
+              </Link>
+            </div>
+          </article>
+        ))}
       </div>
 
       {orders.length === 0 && <p className="mt-6 text-base-gray-500">No hay pedidos aún.</p>}

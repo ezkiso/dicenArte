@@ -21,8 +21,8 @@ export default async function AdminProductsPage() {
         </Link>
       </div>
 
-      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-      <table className="w-full min-w-[38rem] border-collapse text-sm">
+      <div className="hidden overflow-x-auto md:block">
+      <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="border-b border-base-gray-300 text-left">
             <th className="py-2">Nombre</th>
@@ -57,6 +57,32 @@ export default async function AdminProductsPage() {
           ))}
         </tbody>
       </table>
+      </div>
+
+      <div className="space-y-3 md:hidden">
+        {products.map((product) => (
+          <article key={product.id} className="min-w-0 border border-base-gray-200 p-4">
+            <h2 className="break-words font-medium">{product.name}</h2>
+            <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+              <dt className="text-base-gray-500">Categoría</dt>
+              <dd className="break-words text-right">{product.category.name}</dd>
+              <dt className="text-base-gray-500">Precio</dt>
+              <dd className="text-right">
+                {product.priceClp === null ? "Sin precio" : formatClp(product.priceClp)}
+              </dd>
+              <dt className="text-base-gray-500">Stock</dt>
+              <dd className="text-right">
+                {product.stock === 0 ? "Agotado" : product.stock}
+              </dd>
+            </dl>
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-x-4 gap-y-2 border-t border-base-gray-200 pt-3">
+              <Link href={`/admin/productos/${product.id}`} className="text-sm underline">
+                Editar
+              </Link>
+              <DeleteProductButton id={product.id} />
+            </div>
+          </article>
+        ))}
       </div>
 
       {products.length === 0 && (

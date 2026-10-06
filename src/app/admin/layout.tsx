@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 // RF-18: layout compartido del panel de administración.
 // El acceso ya está restringido a rol ADMIN por middleware.ts.
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

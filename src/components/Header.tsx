@@ -4,15 +4,9 @@ import MobileMenu from "@/components/MobileMenu";
 import CategoryTreeMenu, { type CategoryNode } from "@/components/CategoryTreeMenu";
 import HeaderAuthLinks from "@/components/HeaderAuthLinks";
 import { prisma } from "@/lib/prisma";
-import { unstable_cache } from "next/cache";
 import { ChevronDown } from "lucide-react";
 
 async function getCategoryTree(): Promise<CategoryNode[]> {
-  return getCachedCategoryTree();
-}
-
-const getCachedCategoryTree = unstable_cache(
-  async (): Promise<CategoryNode[]> => {
   let all;
   try {
     all = await prisma.category.findMany({ orderBy: { name: "asc" } });
@@ -37,10 +31,7 @@ const getCachedCategoryTree = unstable_cache(
   const roots = byParent.get(null) ?? [];
   roots.forEach(attachChildren);
   return roots;
-  },
-  ["category-tree-v2"],
-  { revalidate: 300 }
-);
+}
 
 export default async function Header() {
   const categories = await getCategoryTree();

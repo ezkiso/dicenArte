@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 interface CategoryOption {
   id: string;
   name: string;
+  slug: string;
+  children: { id: string; name: string; slug: string }[];
 }
 
 interface ProductFormValues {
@@ -28,16 +30,38 @@ export default function AdminProductForm({
   initial?: ProductFormValues;
 }) {
   const router = useRouter();
-  const [values, setValues] = useState<ProductFormValues>(
-    initial ?? {
+  const [selectedMainCategoryId, setSelectedMainCategoryId] = useState(() => {
+    const initialCategory = categories.find(
+      (category) =>
+        category.id === initial?.categoryId ||
+        category.children.some((child) => child.id === initial?.categoryId)
+    );
+    return initialCategory?.id ?? "";
+  });
+  const initialMainCategory = categories.find(
+    (category) =>
+      category.id === initial?.categoryId ||
+      category.children.some((child) => child.id === initial?.categoryId)
+  );
+  const [values, setValues] = useState<ProductFormValues>(() =>
+    initial
+      ? {
+          ...initial,
+          categoryId:
+            initialMainCategory?.children.length &&
+            initial.categoryId === initialMainCategory.id
+              ? ""
+              : initial.categoryId,
+        }
+      : {
       name: "",
       slug: "",
       description: "",
       priceClp: "",
       stock: 0,
       isCustom: true,
-      categoryId: categories[0]?.id ?? "",
-    }
+      categoryId: "",
+        }
   );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -45,6 +69,11 @@ export default function AdminProductForm({
   const [createdProductId, setCreatedProductId] = useState<string | null>(null);
 
   const isEdit = Boolean(initial?.id);
+  const selectedMainCategory = categories.find(
+    (category) => category.id === selectedMainCategoryId
+  );
+  const hasSubcategories = Boolean(selectedMainCategory?.children.length);
+  const canSaveCategory = Boolean(values.categoryId);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -122,7 +151,7 @@ export default function AdminProductForm({
       <div>
         <label className="mb-1 block text-sm font-medium">Slug (URL, opcional)</label>
         <input
-          pattern="[a-z0-9-]+"
+          pattern="(?:[a-z0-9]|-)+"
           placeholder="Se generará desde el nombre si lo dejas vacío"
           value={values.slug}
           onChange={(e) => setValues({ ...values, slug: e.target.value })}
@@ -184,19 +213,61 @@ export default function AdminProductForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium">Categoría</label>
+        <label htmlFor="main-category" className="mb-1 block text-sm font-medium">
+          Categoría
+        </label>
         <select
-          value={values.categoryId}
-          onChange={(e) => setValues({ ...values, categoryId: e.target.value })}
+          id="main-category"
+          required
+          value={selectedMainCategoryId}
+          onChange={(e) => {
+            const category = categories.find((item) => item.id === e.target.value);
+            setSelectedMainCategoryId(e.target.value);
+            setValues({
+              ...values,
+              categoryId: category?.children.length ? "" : category?.id ?? "",
+            });
+          }}
           className="w-full border border-base-gray-300 p-2 text-sm"
         >
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
+          <option value="" disabled>
+            Selecciona una categoría
+          </option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
             </option>
           ))}
         </select>
       </div>
+
+      {hasSubcategories && selectedMainCategory && (
+        <div>
+          <label htmlFor="product-subcategory" className="mb-1 block text-sm font-medium">
+            {selectedMainCategory.slug === "cojines-de-mascotas"
+              ? "Tipo de pintura"
+              : "Subcategoría"}
+          </label>
+          <select
+            id="product-subcategory"
+            required
+            value={values.categoryId}
+            onChange={(e) => setValues({ ...values, categoryId: e.target.value })}
+            className="w-full border border-base-gray-300 p-2 text-sm"
+          >
+            <option value="" disabled>
+              {selectedMainCategory.slug === "cojines-de-mascotas"
+                ? "Selecciona un tipo de pintura"
+                : "Selecciona una subcategoría"}
+            </option>
+            {selectedMainCategory.children.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <label className="flex items-center gap-2 text-sm">
         <input
@@ -231,7 +302,7 @@ export default function AdminProductForm({
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || !canSaveCategory}
         className="bg-base-black px-6 py-3 text-sm font-semibold text-base-white disabled:opacity-50"
       >
         {loading

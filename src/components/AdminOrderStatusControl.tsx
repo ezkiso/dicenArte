@@ -95,7 +95,7 @@ export default function AdminOrderStatusControl({
               type="button"
               onClick={() => updateStatus(nextStatus, false)}
               disabled={loading}
-              className="bg-base-black px-4 py-2 text-sm font-semibold text-base-white disabled:opacity-50"
+              className="max-w-full whitespace-normal break-words bg-base-black px-4 py-2 text-left text-sm font-semibold text-base-white disabled:opacity-50"
             >
               {loading ? "Actualizando…" : `Avanzar a ${ORDER_STATUS_LABELS[nextStatus]}`}
             </button>
@@ -104,7 +104,7 @@ export default function AdminOrderStatusControl({
                 type="button"
                 onClick={() => updateStatus(previousStatus, true)}
                 disabled={loading}
-                className="border border-base-gray-400 px-4 py-2 text-sm font-semibold disabled:opacity-50"
+                className="max-w-full whitespace-normal break-words border border-base-gray-400 px-4 py-2 text-left text-sm font-semibold disabled:opacity-50"
               >
                 {loading ? "Actualizando…" : `Retroceder a ${ORDER_STATUS_LABELS[previousStatus]}`}
               </button>
@@ -140,7 +140,7 @@ export default function AdminOrderStatusControl({
             type="button"
             onClick={() => updateStatus(previousStatus, true)}
             disabled={loading}
-            className="border border-base-gray-400 px-4 py-2 text-sm font-semibold disabled:opacity-50"
+            className="max-w-full whitespace-normal break-words border border-base-gray-400 px-4 py-2 text-left text-sm font-semibold disabled:opacity-50"
           >
             {loading ? "Actualizando…" : `Retroceder a ${ORDER_STATUS_LABELS[previousStatus]}`}
           </button>

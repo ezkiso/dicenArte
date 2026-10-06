@@ -75,7 +75,13 @@ export default function ProductImageUploader({
                 alt="Imagen del producto"
                 className="absolute inset-0 block h-full w-full cursor-zoom-in"
               >
-                <Image src={img.url!} alt="Imagen del producto" fill className="object-cover" />
+                <Image
+                  src={img.url!}
+                  alt="Imagen del producto"
+                  fill
+                  sizes="(max-width: 640px) 33vw, 192px"
+                  className="object-cover"
+                />
               </ImageZoom>
               <button
                 type="button"

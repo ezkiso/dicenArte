@@ -2,25 +2,22 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { cache } from "react";
-import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSignedImageUrl } from "@/lib/s3";
 import { formatClp } from "@/lib/utils";
 import AddToCartButton from "@/components/AddToCartButton";
 import ImageZoom from "@/components/ImageZoom";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 const getProduct = cache(async (slug: string) => {
-  const product = await unstable_cache(
-    () =>
-      prisma.product.findUnique({
-        where: { slug },
-        include: { images: { orderBy: { order: "asc" } }, category: true },
-      }),
-    ["product-by-slug", slug],
-    { revalidate: 60 }
-  )();
+  const product = await prisma.product.findUnique({
+    where: { slug },
+    include: {
+      images: { orderBy: { order: "asc" } },
+      category: { include: { parent: true } },
+    },
+  });
   if (!product) return null;
 
   const images = await Promise.all(
@@ -85,9 +82,16 @@ export default async function ProductPage({ params }: { params: { slug: string }
         </div>
 
         <div>
-          <p className="text-sm uppercase tracking-wide text-base-gray-500">
-            {product.category.name}
-          </p>
+          {product.category.parent?.slug === "cojines-de-mascotas" ? (
+            <div className="text-sm uppercase tracking-wide text-base-gray-500">
+              <p>{product.category.parent.name}</p>
+              <p className="mt-1 text-base-gray-700">{product.category.name}</p>
+            </div>
+          ) : (
+            <p className="text-sm uppercase tracking-wide text-base-gray-500">
+              {product.category.name}
+            </p>
+          )}
           <h1 className="mt-1 font-display text-3xl">{product.name}</h1>
           <p className="mt-4 text-2xl font-semibold">
             {product.priceClp === null

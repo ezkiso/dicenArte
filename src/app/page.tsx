@@ -6,16 +6,27 @@ import Image from "next/image";
 import { getSignedImageUrl } from "@/lib/s3";
 
 export const metadata: Metadata = {
-  title: "Cojines personalizados y bolsas de género",
+  title: { absolute: "Dicen Arte | Arte Personalizado y servicios para mascotas" },
   description:
-    "Cojines personalizados y bolsas de género en Chile. Regalos con fotos, estampados a pedido y envío nacional desde Dicen Arte.",
+    "Cuadros de mascotas personalizados y servicios para mascotas en Chile: Cat-Sister, hospedaje de mascotas y paseo de mascotas.",
   keywords: [
-    "cojines personalizados Chile",
-    "bolsas personalizadas Chile",
-    "regalos con fotos",
-    "estampados a pedido",
-    "cojines estampados 40x40",
+    "cuadros de mascotas personalizados",
+    "arte personalizado para mascotas",
+    "servicios para mascotas",
+    "Cat-Sister",
+    "hospedaje de mascotas",
+    "paseo de mascotas",
   ],
+  openGraph: {
+    title: "Dicen Arte | Arte Personalizado y servicios para mascotas",
+    description:
+      "Cuadros de mascotas personalizados y servicios para mascotas: Cat-Sister, hospedaje de mascotas y paseo de mascotas.",
+  },
+  twitter: {
+    title: "Dicen Arte | Arte Personalizado y servicios para mascotas",
+    description:
+      "Cuadros de mascotas personalizados y servicios para mascotas: Cat-Sister, hospedaje de mascotas y paseo de mascotas.",
+  },
 };
 
 export const dynamic = "force-dynamic";

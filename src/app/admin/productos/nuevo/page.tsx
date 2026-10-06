@@ -2,10 +2,17 @@ import { prisma } from "@/lib/prisma";
 import AdminProductForm from "@/components/AdminProductForm";
 
 export default async function NewProductPage() {
-  const categories = await prisma.category.findMany({
-    where: { parentId: { not: null } },
+  const categoryRoots = await prisma.category.findMany({
+    where: { parentId: null },
     orderBy: { name: "asc" },
+    include: {
+      children: {
+        orderBy: { name: "asc" },
+        include: { children: { orderBy: { name: "asc" } } },
+      },
+    },
   });
+  const categories = categoryRoots.flatMap((root) => root.children);
 
   return (
     <div>

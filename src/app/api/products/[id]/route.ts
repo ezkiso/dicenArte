@@ -52,6 +52,19 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     );
   }
 
+  if (parsed.data.categoryId) {
+    const category = await prisma.category.findUnique({
+      where: { id: parsed.data.categoryId },
+      select: { id: true },
+    });
+    if (!category) {
+      return NextResponse.json(
+        { error: "La categoría seleccionada no es válida." },
+        { status: 400 }
+      );
+    }
+  }
+
   const existing = await prisma.product.findUnique({ where: { id: params.id } });
   if (!existing) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
 

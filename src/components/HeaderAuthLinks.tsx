@@ -54,7 +54,7 @@ export default function HeaderAuthLinks() {
         </button>
 
         {previewOpen && (
-          <div className="absolute right-0 top-full z-50 mt-4 w-[min(22rem,calc(100vw-2rem))] border border-base-gray-200 bg-base-white p-4 shadow-[0_20px_40px_rgba(0,0,0,0.12)]">
+          <div className="fixed inset-x-4 top-[5.5rem] z-50 max-h-[calc(100dvh-6rem)] overflow-y-auto border border-base-gray-200 bg-base-white p-4 shadow-[0_20px_40px_rgba(0,0,0,0.12)] md:absolute md:inset-x-auto md:right-0 md:top-full md:mt-4 md:max-h-[calc(100vh-6rem)] md:w-[min(22rem,calc(100vw-2rem))]">
             <div className="mb-4 flex items-center justify-between border-b border-base-gray-200 pb-3">
               <h2 className="font-display text-xl">Tu carrito</h2>
               <span className="text-xs text-base-gray-500">

@@ -28,49 +28,57 @@ export default function CarritoPage() {
 
       <ul className="divide-y divide-base-gray-200 border-y border-base-gray-200">
         {items.map((item) => (
-          <li key={item.productId} className="flex items-center gap-4 py-4">
-            <div className="flex-1">
-              <Link href={`/tienda/${item.slug}`} className="font-medium hover:underline">
+          <li
+            key={item.productId}
+            className="flex min-w-0 flex-col gap-3 py-4 sm:flex-row sm:items-center sm:gap-4"
+          >
+            <div className="min-w-0 sm:flex-1">
+              <Link
+                href={`/tienda/${item.slug}`}
+                className="break-words font-medium hover:underline"
+              >
                 {item.name}
               </Link>
               <p className="text-sm text-base-gray-500">{formatClp(item.priceClp)}</p>
             </div>
 
-            <label className="sr-only" htmlFor={`qty-${item.productId}`}>
-              Cantidad
-            </label>
-            <input
-              id={`qty-${item.productId}`}
-              type="number"
-              min={1}
-              max={item.stock}
-              value={item.quantity}
-              onChange={(e) =>
-                updateQuantity(item.productId, Math.max(1, Number(e.target.value)))
-              }
-              className="w-16 border border-base-gray-300 px-2 py-1 text-center"
-            />
+            <div className="flex min-w-0 items-center justify-between gap-3 sm:justify-end">
+              <label className="sr-only" htmlFor={`qty-${item.productId}`}>
+                Cantidad
+              </label>
+              <input
+                id={`qty-${item.productId}`}
+                type="number"
+                min={1}
+                max={item.stock}
+                value={item.quantity}
+                onChange={(e) =>
+                  updateQuantity(item.productId, Math.max(1, Number(e.target.value)))
+                }
+                className="w-16 shrink-0 border border-base-gray-300 px-2 py-1 text-center"
+              />
 
-            <p className="w-24 text-right font-medium">
-              {formatClp(item.priceClp * item.quantity)}
-            </p>
+              <p className="min-w-0 break-words text-right font-medium sm:w-24 sm:shrink-0">
+                {formatClp(item.priceClp * item.quantity)}
+              </p>
 
-            <button
-              onClick={() => removeItem(item.productId)}
-              aria-label={`Eliminar ${item.name}`}
-              className="text-base-gray-500 hover:text-base-black"
-            >
-              ✕
-            </button>
+              <button
+                onClick={() => removeItem(item.productId)}
+                aria-label={`Eliminar ${item.name}`}
+                className="shrink-0 px-1 text-base-gray-500 hover:text-base-black"
+              >
+                ✕
+              </button>
+            </div>
           </li>
         ))}
       </ul>
 
-      <div className="mt-6 flex items-center justify-between">
+      <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-lg font-semibold">Total: {formatClp(total)}</p>
         <Link
           href="/checkout"
-          className="bg-base-black px-6 py-3 text-sm font-semibold text-base-white"
+          className="bg-base-black px-6 py-3 text-center text-sm font-semibold text-base-white sm:w-auto"
         >
           Ir a pagar
         </Link>

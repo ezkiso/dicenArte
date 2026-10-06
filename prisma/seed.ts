@@ -36,6 +36,7 @@ async function main() {
     "pintura-acrilica",
     "impresion-canva",
     "dibujo-por-cambiar",
+    "acuarela",
   ]);
 
   await prisma.category.deleteMany({
@@ -89,6 +90,16 @@ async function main() {
     create: {
       name: "Dibujo (por cambiar)",
       slug: "dibujo-por-cambiar",
+      parentId: cojines.id,
+    },
+  });
+
+  await prisma.category.upsert({
+    where: { slug: "acuarela" },
+    update: { name: "Acuarela", parentId: cojines.id },
+    create: {
+      name: "Acuarela",
+      slug: "acuarela",
       parentId: cojines.id,
     },
   });

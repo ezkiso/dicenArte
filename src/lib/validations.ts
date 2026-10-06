@@ -61,7 +61,8 @@ export const productSchema = z.object({
   isCustom: z.boolean({ required_error: "Indica si el producto es personalizado." }),
   categoryId: z
     .string({ required_error: "Selecciona una categoría." })
-    .cuid("La categoría seleccionada no es válida."),
+    .min(1, "Selecciona una categoría.")
+    .max(191, "La categoría seleccionada no es válida."),
 });
 
 // RF-06/07: datos de checkout. Ya no hay registro previo, así que aquí se

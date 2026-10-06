@@ -4,17 +4,27 @@ import { getSignedImageUrl } from "@/lib/s3";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Tienda | Cojines y bolsas personalizados",
+  title: "Tienda | Arte personalizado para mascotas",
   description:
-    "Descubre cojines personalizados y bolsas de género personalizadas en Chile, con estampados a pedido y diseños exclusivos para regalar.",
+    "Descubre cuadros de mascotas personalizados y arte hecho a pedido en Dicen Arte.",
   keywords: [
-    "cojines personalizados Chile",
-    "bolsas personalizadas Chile",
-    "regalos con fotos Santiago",
-    "estampados a pedido",
-    "cojines estampados 40x40",
-    "bolsas de género personalizadas",
+    "cuadros de mascotas personalizados",
+    "arte personalizado para mascotas",
+    "cuadro de mascota a pedido",
+    "pintura personalizada de mascotas",
+    "Acuarela de mascotas",
+    "Dicen Arte",
   ],
+  openGraph: {
+    title: "Dicen Arte | Arte Personalizado y servicios para mascotas",
+    description:
+      "Descubre cuadros de mascotas personalizados y arte hecho a pedido en Dicen Arte.",
+  },
+  twitter: {
+    title: "Dicen Arte | Arte Personalizado y servicios para mascotas",
+    description:
+      "Descubre cuadros de mascotas personalizados y arte hecho a pedido en Dicen Arte.",
+  },
 };
 
 export const revalidate = 60;

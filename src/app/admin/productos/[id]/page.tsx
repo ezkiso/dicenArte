@@ -8,8 +8,14 @@ export default async function EditProductPage({ params }: { params: { id: string
   const [product, categories] = await Promise.all([
     prisma.product.findUnique({ where: { id: params.id }, include: { images: true } }),
     prisma.category.findMany({
-      where: { parentId: { not: null } },
+      where: { parentId: null },
       orderBy: { name: "asc" },
+      include: {
+        children: {
+          orderBy: { name: "asc" },
+          include: { children: { orderBy: { name: "asc" } } },
+        },
+      },
     }),
   ]);
 
@@ -26,7 +32,7 @@ export default async function EditProductPage({ params }: { params: { id: string
     <div>
       <h1 className="mb-6 font-display text-2xl">Editar producto</h1>
       <AdminProductForm
-        categories={categories}
+        categories={categories.flatMap((root) => root.children)}
         initial={{
           id: product.id,
           name: product.name,

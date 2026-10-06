@@ -44,6 +44,14 @@ export async function POST(req: NextRequest) {
   }
 
   const { slug, ...productData } = parsed.data;
+  const category = await prisma.category.findUnique({
+    where: { id: productData.categoryId },
+    select: { id: true },
+  });
+  if (!category) {
+    return NextResponse.json({ error: "La categoría seleccionada no es válida." }, { status: 400 });
+  }
+
   const product = await prisma.product.create({
     data: { ...productData, slug: slug || (await getUniqueSlug(parsed.data.name)) },
   });

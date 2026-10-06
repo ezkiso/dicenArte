@@ -82,8 +82,8 @@ export default async function AdminOrderDetailPage({
 
       <section className="mt-6 min-w-0 border border-base-gray-200 p-4">
         <h2 className="mb-3 font-display text-lg">Productos comprados</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[30rem] border-collapse text-sm">
+        <div className="hidden overflow-x-auto md:block">
+          <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-base-gray-300 text-left">
                 <th className="py-2 pr-4">Producto</th>
@@ -105,6 +105,23 @@ export default async function AdminOrderDetailPage({
               ))}
             </tbody>
           </table>
+        </div>
+        <div className="space-y-3 md:hidden">
+          {order.items.map((item) => (
+            <article key={item.id} className="border-b border-base-gray-200 py-3 text-sm">
+              <h3 className="break-words font-medium">{item.product.name}</h3>
+              <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1">
+                <dt className="text-base-gray-500">Precio unitario</dt>
+                <dd className="text-right">{formatClp(item.unitPriceClp)}</dd>
+                <dt className="text-base-gray-500">Cantidad</dt>
+                <dd className="text-right">{item.quantity}</dd>
+                <dt className="text-base-gray-500">Subtotal</dt>
+                <dd className="text-right font-medium">
+                  {formatClp(item.unitPriceClp * item.quantity)}
+                </dd>
+              </dl>
+            </article>
+          ))}
         </div>
         <div className="mt-4 flex flex-wrap justify-end gap-x-4 gap-y-1 border-t border-base-gray-200 pt-4">
           <p className="text-sm">Despacho: {formatClp(order.shippingCostClp)}</p>

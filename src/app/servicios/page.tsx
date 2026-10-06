@@ -6,13 +6,13 @@ const whatsappPhone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "56987470959";
 
 const services = [
   {
-    name: "Cat-sister",
+    name: "Cat-Sister",
     description: "Una hora de cuidado de tu gato a domicilio.",
     icon: Cat,
     message: "Hola, quisiera consultar por el servicio de Cat-sister.",
   },
   {
-    name: "Paseo de perro",
+    name: "Paseo de mascotas",
     description: "Paseos para uno o más perros. El precio varía según el porte y la cantidad.",
     icon: Dog,
     message: "Hola, quisiera consultar por un paseo de perro. El porte es [pequeño/mediano/grande] y serían [cantidad] perro(s).",
@@ -27,7 +27,26 @@ const services = [
 
 export const metadata: Metadata = {
   title: "Servicios para mascotas",
-  description: "Cat-sister, paseo de perros y hospedaje de mascotas. Consulta disponibilidad y precios por WhatsApp.",
+  description:
+    "Conoce Cat-Sister, hospedaje de mascotas y paseo de mascotas. Consulta disponibilidad y precios por WhatsApp.",
+  keywords: [
+    "servicios para mascotas",
+    "Cat-Sister",
+    "hospedaje de mascotas",
+    "paseo de mascotas",
+    "cuidado de mascotas",
+    "Dicen Arte",
+  ],
+  openGraph: {
+    title: "Dicen Arte | Arte Personalizado y servicios para mascotas",
+    description:
+      "Servicios para mascotas: Cat-Sister, hospedaje de mascotas y paseo de mascotas. Atención en Providencia, Ñuñoa, Santiago Centro, Macul y La Florida.",
+  },
+  twitter: {
+    title: "Dicen Arte | Arte Personalizado y servicios para mascotas",
+    description:
+      "Servicios para mascotas: Cat-Sister, hospedaje de mascotas y paseo de mascotas.",
+  },
 };
 
 export default function ServiciosPage() {
